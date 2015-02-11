@@ -29,8 +29,6 @@ function run() {
         aria2.send('addUri',[magnet],function(err,res){
           if(err) {aria2.close(); log(err); return;}
           log("Added : "+magnet+" => "+res);
-          if(aria2)
-             aria2.close();
         })
       });
     })
