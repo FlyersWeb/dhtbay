@@ -1,0 +1,14 @@
+{
+  "name": "DHTCrawler",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "aria2": "0.0.6",
+    "bencode": "0.6.0",
+    "chokidar": "^1.0.0-rc3",
+    "dht.js": "^0.2.16",
+    "mongoose": "^3.8.23",
+    "read-torrent": "^1.2.0",
+    "redis": "^0.12.1"
+  }
+}
