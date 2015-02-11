@@ -1,6 +1,6 @@
 {
-  "name": "DHTCrawler",
-  "version": "0.0.1",
+  "name": "dht-bay",
+  "version": "0.1.0",
   "private": true,
   "dependencies": {
     "aria2": "0.0.6",
