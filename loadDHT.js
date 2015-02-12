@@ -19,16 +19,20 @@ var log = console.log.bind(console);
 
 function run() {
 
-  client.lpop("DHTS", function(err, hash){
+  client.lrange("DHTS", 0, 10, function(err, hashs){
+    var uris = [];
     if(err) {log(err); return;}
-    if(!hash) {return;}
-    var magnet = MAGNET_TEMPLATE.replace('{DHTHASH}',hash);
+    if(!hashs) {return;}
+    hashs.forEach(function(hash) {
+       var magnet = MAGNET_TEMPLATE.replace('{DHTHASH}',hash);
+       uris.push(magnet);
+    });
     aria2.send('getVersion', function(err,res){
       log(err || res);
       aria2.open(function(){
-        aria2.send('addUri',[magnet],function(err,res){
+        aria2.send('addUri',uris,function(err,res){
           if(err) {aria2.close(); log(err); return;}
-          log("Added : "+magnet+" => "+res);
+          log("Added : "+uris.toString()+" => "+res);
         })
       });
     })
@@ -38,5 +42,5 @@ function run() {
 
 setInterval(function(){
    run();
-}, 1000);
+}, 5000);
 
