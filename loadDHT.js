@@ -33,7 +33,9 @@ function run() {
         aria2.send('addUri',uris,function(err,res){
           if(err) {aria2.close(); log(err); return;}
           log("Added : "+uris.toString()+" => "+res);
-          if( typeof aria2 !== "undefined") aria2.close();
+          client.ltrim("DHTS", 10, -1, function(err, stat) {
+             if( typeof aria2 !== "undefined") aria2.close();
+          });
         })
       });
     })
