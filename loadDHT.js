@@ -11,31 +11,30 @@ client.on("error", function(err) {
 
 var dest = __dirname+"/torrent/";
 var MAX_DL = 10;
-var MAGNET_TEMPLATE = "magnet:?xt=urn:btih:{DHTHASH}"
+var MAGNET_TEMPLATE = "magnet:?xt=urn:btih:{DHTHASH}&tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce"
 
-var aria2 = new Aria2();
+var aria2 = new Aria2({
+   host: '127.0.0.1',
+   port: 6800,
+   secure: false,
+   secret: ''
+});
 
 var log = console.log.bind(console);
 
 function run() {
 
-  client.lrange("DHTS", 0, 10, function(err, hashs){
-    var uris = [];
+  client.lpop("DHTS",function(err, hash){
     if(err) {log(err); return;}
-    if(!hashs) {return;}
-    hashs.forEach(function(hash) {
-       var magnet = MAGNET_TEMPLATE.replace('{DHTHASH}',hash);
-       uris.push(magnet);
-    });
+    if(!hash) {return;}
+    var magnet = MAGNET_TEMPLATE.replace('{DHTHASH}',hash);
     aria2.send('getVersion', function(err,res){
       log(err || res);
       aria2.open(function(){
-        aria2.send('addUri',uris,function(err,res){
+        aria2.send('addUri',[magnet],function(err,res){
           if(err) {aria2.close(); log(err); return;}
-          log("Added : "+uris.toString()+" => "+res);
-          client.ltrim("DHTS", 10, -1, function(err, stat) {
-             if( typeof aria2 !== "undefined") aria2.close();
-          });
+          log("Added : "+magnet+" => "+res);
+          aria2.close();
         })
       });
     })
@@ -45,5 +44,5 @@ function run() {
 
 setInterval(function(){
    run();
-}, 5000);
+}, 100);
 

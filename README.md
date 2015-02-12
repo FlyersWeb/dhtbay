@@ -16,6 +16,12 @@ apt-get install redis-server redis-tools mongodb aria2
 apt-get install nodejs
 ```
 
+#### Install forever
+
+```
+sudo npm install -g forever
+```
+
 #### Install dependencies
 
 ```
@@ -27,4 +33,5 @@ npm install
 ```
 sh launcher.sh
 ```
-You'll have your DHT Crawler up and running
+
+You'll have your DHT Crawler up and running. Access portal at http://127.0.0.1:3000/

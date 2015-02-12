@@ -1,3 +1,4 @@
+var fs = require('fs');
 var path = require('path');
 
 var chokidar = require('chokidar');
@@ -9,16 +10,9 @@ var watcher = chokidar.watch('torrent', {
 });
 
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/dhtcrawler');
+mongoose.createConnection('mongodb://127.0.0.1/dhtcrawler');
 
-var TorrentSchema = mongoose.Schema({
-  hash: String,
-  name: String,
-  sources: [String],
-  size: {type: String, default: null},
-  files: {type: [String], default: null}
-});
-var Torrent = mongoose.model('Torrent',TorrentSchema);
+var Torrent = require('./models/Torrent.js');
 
 var log = console.log.bind(console);
 
@@ -44,15 +38,21 @@ watcher
         var sources = ftorrent.announce;
         var name = ftorrent.name;
         var infoHash = ftorrent.infoHash;
-        var torrent = new Torrent({
-          'hash': infoHash,
-          'name': name,
-          'sources': sources,
-          'size': size,
-          'files': files
-        });
-        torrent.save(function(err){
-          if(err) { log(err); return; }
+        Torrent.findOne({'hash':infoHash},function(err,torrent){
+           if(err){log(err); return;}
+           if(!torrent) {
+             var torrent = new Torrent({
+              'hash': infoHash,
+              'name': name,
+              'sources': sources,
+              'size': size,
+              'files': files
+             });
+             torrent.save(function(err){
+               if(err) { log(err); return; }
+               fs.unlink(fullpath);
+             });
+           }
         });
       });
     } else {
