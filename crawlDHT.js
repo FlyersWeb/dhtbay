@@ -4,8 +4,6 @@ var timers = require("timers");
 
 var bencode = require("bencode");
 
-//var Aria2 = require("aria2");
-
 var redis = require("redis");
     client = redis.createClient();
 
@@ -21,8 +19,7 @@ var BOOTSTRAP_NODES = [
     ["router.utorrent.com", 6881]
 ];
 var TID_LENGTH = 4;
-var MAX_QNODE_SIZE = 1000;
-var MAGNET_TEMPLATE = "magnet:?xt=urn:btih:{DHTHASH}&tr=udp%3a%2f%2ftracker.publicbt.com%3a80%2fannounce"
+var MAX_QNODE_SIZE = 10000;
 
 function randomID() {
     return new Buffer(
@@ -104,27 +101,7 @@ DHT.prototype.processFindNode = function(msg, rinfo) {
     var target = msg.a.target;
     var that = this;
     if (target) {
-        var magnetTarget = MAGNET_TEMPLATE.replace('{DHTHOST}',rinfo.address).replace('{DHTPORT}',rinfo.port).replace('{DHTHASH}', target.toString("hex"));
-        console.log(magnetTarget);
         this.master.log(rinfo, target);
-
-	this.client.rpush("DHTS", target.toString("hex"));
-
-/*
-        this.aria2.onopen = function() {
-           console.log("OPEN");
-           that.aria2.getGlobalOption(function(err,res){
-              that.aria2.send('addUri', [magnetTarget], {'bt-metadata-only': true, 'bt-save-metadata': true, 'bt-stop-timeout':120, 'dir':__dirname+'/torrent', }, function(err, res) {
-                 console.log("ADD URI ERR", err || res);
-              });
-              that.aria2.close(function(err){if(err)console.log(err);});
-           });
-        };
-        this.aria2.send('getVersion', function(err,res){
-           console.log("VERSION : ", err || res);
-           that.aria2.open(function(err){if(err)console.log(err);});
-        });
-*/
     }
     this.playDead(msg.t, rinfo);
 };
@@ -132,6 +109,8 @@ DHT.prototype.processGetPeers = function(msg, rinfo) {
     var infohash = msg.a.info_hash;
     if (infohash) {
         this.master.log(infohash);
+
+        this.client.rpush("DHTS", infohash.toString("hex"));
     }
     this.playDead(msg.t, rinfo);
 };
