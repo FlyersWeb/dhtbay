@@ -99,10 +99,9 @@ DHT.prototype.processFindNodeReceived = function(nodes) {
 };
 DHT.prototype.processFindNode = function(msg, rinfo) {
     var target = msg.a.target;
-    var that = this;
-    if (target) {
-        this.master.log(rinfo, target);
-    }
+//    if (target) {
+//        this.master.log(rinfo, target);
+//    }
     this.playDead(msg.t, rinfo);
 };
 DHT.prototype.processGetPeers = function(msg, rinfo) {
