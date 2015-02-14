@@ -48,5 +48,5 @@ function run() {
 
 setInterval(function(){
    run();
-}, 100);
+}, 10000);
 
