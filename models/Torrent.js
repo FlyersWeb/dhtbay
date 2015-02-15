@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/dhtcrawler');
 
 var TorrentSchema = mongoose.Schema({
   hash: String,

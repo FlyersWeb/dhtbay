@@ -10,7 +10,7 @@ var watcher = chokidar.watch('torrent', {
 });
 
 var mongoose = require('mongoose');
-mongoose.createConnection('mongodb://127.0.0.1/dhtcrawler');
+mongoose.connect('mongodb://127.0.0.1/dhtcrawler');
 
 var Torrent = require('./models/Torrent.js');
 

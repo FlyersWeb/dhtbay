@@ -5,8 +5,8 @@
   "dependencies": {
     "aria2": "0.0.6",
     "bencode": "0.6.0",
+    "bittorrent-dht": "^2.6.4",
     "chokidar": "^1.0.0-rc3",
-    "dht.js": "^0.2.16",
     "express": "^4.11.2",
     "mongoose": "^3.8.23",
     "read-torrent": "^1.2.0",
