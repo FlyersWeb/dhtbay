@@ -8,7 +8,7 @@
     "bittorrent-dht": "^2.6.4",
     "chokidar": "^1.0.0-rc3",
     "express": "^4.11.2",
-    "mongoose": "^3.8.23",
+    "mongoose": "3.8.23",
     "read-torrent": "^1.2.0",
     "redis": "^0.12.1"
   }

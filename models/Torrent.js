@@ -1,12 +1,12 @@
 var mongoose = require('mongoose');
 
 var TorrentSchema = mongoose.Schema({
-  hash: String,
+  hash: { type: String, index: true },
   name: String,
   sources: [String],
   size: {type: String, default: null},
   files: {type: [String], default: null},
-  added: {type: Date, default: Date.now}
+  added: {type: Date, default: Date.now, index: true}
 });
 var Torrent = mongoose.model('Torrent',TorrentSchema);
 
