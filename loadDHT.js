@@ -1,4 +1,5 @@
 var Aria2 = require('aria2');
+var fs = require('fs');
 
 var redis = require("redis");
     client = redis.createClient();
@@ -29,6 +30,7 @@ function run() {
   client.lpop("DHTS",function(err, hash){
     if(err) {log(err); return;}
     if(!hash) {return;}
+    if(fs.existsSync(dest+hash.toString().toUpperCase()+'.torrent')) {log("File "+hash.toString().toUpperCase()+".torrent already exists");return;}
     var magnet = MAGNET_TEMPLATE.replace('{DHTHASH}',hash.toString().toUpperCase());
     var torcache = TORCACHE.replace('{DHTHASH}',hash.toString().toUpperCase());
     var torrage = TORRAGE.replace('{DHTHASH}',hash.toString().toUpperCase());
