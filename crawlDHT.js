@@ -4,9 +4,6 @@ var util = require('util');
 var redis = require("redis");
     client = redis.createClient();
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/dhtcrawler');
-
 var Table = require('./models/Table.js');
 
 var log = console.log.bind(console);
@@ -66,7 +63,7 @@ Table.findOne({}, function(err,table){
   });
 
   dht.on('peer', function(addr, infoHash, from) {
-    log('peer');
+    //log('peer');
   });
 
   dht.on('error',function(err) {

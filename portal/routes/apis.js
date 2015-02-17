@@ -9,7 +9,7 @@ router.get('/list', function(req, res, next) {
   var dayBefore = new Date();
   dayBefore.setHours(dayBefore.getHours() - 12);
 
-  Torrent.find({added:{$gte:dayBefore}}).limit(20).sort('-added').lean().exec(function(err,torrents){
+  Torrent.find().limit(20).sort('-added').lean().exec(function(err,torrents){
      if(err) {
         next(err);
         return;

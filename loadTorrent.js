@@ -9,9 +9,6 @@ var watcher = chokidar.watch('torrent', {
   ignored: /[\/\\]\./, persistent: true
 });
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://127.0.0.1/dhtcrawler');
-
 var Torrent = require('./models/Torrent.js');
 
 var log = console.log.bind(console);
@@ -52,6 +49,8 @@ watcher
                if(err) { log(err); return; }
                fs.unlink(fullpath);
              });
+           } else {
+             fs.unlink(fullpath);
            }
         });
       });
