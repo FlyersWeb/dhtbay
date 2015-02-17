@@ -1,0 +1,13 @@
+
+<p>Last {{torrents.length}} :</p>
+<div ng-repeat="torrent in torrents">
+  <h3>{{torrent.name}}</h3>
+  <a href="magnet:?xt=urn:btih:{{torrent.hash}}&amp;tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&amp;tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce">Download magnet</a>
+  <p>Size : {{torrent.size}}</p>
+  <ul>
+    <li ng-repeat="file in torrent.files">
+      {{file}}
+    </li>
+  </ul>
+  <p>Crawled the {{torrent.added}}</p>
+</div>

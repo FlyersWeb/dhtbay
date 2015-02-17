@@ -1,16 +1,14 @@
 doctype html
-html
+html(ng-app="dhtcrawler")
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
+    meta(charset='utf-8')
   body
     block content
 
-script(src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.13/angular.min.js')
-script(src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.13/angular-route.min.js')
-script(src='javascripts/app.js')
-script(src='javascripts/services.js')
-script(src='javascripts/controllers.js')
-script(src='javascripts/filters.js')
-script(src='javascripts/directives.js')
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.13/angular.min.js')
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.13/angular-route.min.js')
+    script(src='/javascripts/app.js')
+    script(src='/javascripts/index/index.js')
 
