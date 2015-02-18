@@ -4,17 +4,24 @@ var router = express.Router();
 var Torrent = require('./../../models/Torrent.js');
 
 /* GET torrent listing. */
-router.get('/list', function(req, res, next) {
+router.get('/list/:limit/:skip', function(req, res, next) {
 
-  var dayBefore = new Date();
-  dayBefore.setHours(dayBefore.getHours() - 12);
+  var limit = req.params.limit;
+  var skip = req.params.skip;
 
-  Torrent.find().limit(20).sort('-added').lean().exec(function(err,torrents){
+  Torrent.find().sort('-added').limit(limit).skip(skip).lean().exec(function(err,torrents){
      if(err) {
         next(err);
         return;
      }
      res.json(torrents);
+  });
+});
+
+
+router.get('/count', function(req, res, ext) {
+  Torrent.find().count(function(err, count) {
+    res.json(count);
   });
 });
 

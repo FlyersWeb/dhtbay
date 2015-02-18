@@ -6,3 +6,5 @@ body {
 a {
   color: #00B7FF;
 }
+
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }

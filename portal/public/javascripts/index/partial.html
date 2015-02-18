@@ -11,3 +11,7 @@
   </ul>
   <p>Crawled the {{torrent.added}}</p>
 </div>
+
+<div class="pagination">
+  <pagination ng-model="currentPage" total-items="totalItems" items-per-page="itemPerPage" max-size="maxSize" ng-change="pageChanged()">
+</div>
