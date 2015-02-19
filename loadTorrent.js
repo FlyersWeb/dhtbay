@@ -16,7 +16,7 @@ var log = console.log.bind(console);
 watcher
   .on('add', function(p) { 
     log('File '+p+' added');
-    if(path.extname(p) == '.torrent') {
+    if(/torrent(\.[0-9]*)?/.test(path.extname(p))) {
       var fullpath = __dirname+'/'+p;
       rt(fullpath, function(err, ftorrent){
         if(err) {log(err); return;}
