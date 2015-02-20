@@ -41,12 +41,18 @@ angular.module('dhtcrawler.index', ['ngRoute', 'ui.bootstrap'])
   $scope.loadTorrents($scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
 
   $scope.pageChanged = function() {
-    $scope.loadTorrents($scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
+    if($scope.term.length>=3){
+      $scope.searchTorrents($scope.term, $scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
+    } else {
+      $scope.loadTorrents($scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
+    }
   };
 
   $scope.termChanged = function() {
     if($scope.term.length>=3){
       $scope.searchTorrents($scope.term,$scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
+    } else {
+      $scope.loadTorrents($scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
     }
   };
 
