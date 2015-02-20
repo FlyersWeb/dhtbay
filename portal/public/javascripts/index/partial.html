@@ -3,6 +3,10 @@
   <pagination ng-model="currentPage" total-items="totalItems" items-per-page="itemPerPage" max-size="maxSize" ng-change="pageChanged()">
 </div>
 
+<div class="search form-group">
+  <label>Search</label>
+  <input type="text" class="form-control" ng-model="term" ng-change="termChanged()">
+</div>
 
 <div ng-repeat="torrent in torrents">
   <h3>{{torrent.name}}</h3>
