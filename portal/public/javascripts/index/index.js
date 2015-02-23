@@ -48,12 +48,12 @@ angular.module('dhtcrawler.index', ['ngRoute', 'ui.bootstrap'])
     }
   };
 
-  $scope.termChanged = function() {
-    if($scope.term.length>=3){
-      $scope.searchTorrents($scope.term,$scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
+  $scope.$watch('term', function(tmpTerm) {
+    if(tmpTerm.length>=2){
+      $scope.searchTorrents(tmpTerm, $scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
     } else {
       $scope.loadTorrents($scope.itemPerPage, ($scope.currentPage-1)*$scope.itemPerPage);
     }
-  };
+  });
 
 }]);

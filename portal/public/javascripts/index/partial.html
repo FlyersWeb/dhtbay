@@ -5,7 +5,7 @@
 
 <div class="search form-group">
   <label>Search</label>
-  <input type="text" class="form-control" ng-model="term" ng-change="termChanged()">
+  <input type="text" class="form-control" ng-model="term" ng-model-options="{debounce: 1000}">
 </div>
 
 <div ng-repeat="torrent in torrents">
