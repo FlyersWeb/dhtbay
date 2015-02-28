@@ -40,7 +40,8 @@ watcher
               'name': name,
               'sources': sources,
               'size': size,
-              'files': files
+              'files': files,
+              'added': new Date()
            }, {'multi': false, 'upsert': true}, function(err, doc) {
               if(err){log(err); return;}
               log('File '+p+' added');
