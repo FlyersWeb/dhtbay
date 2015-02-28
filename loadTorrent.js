@@ -15,9 +15,8 @@ var log = console.log.bind(console);
 
 watcher
   .on('add', function(p) { 
-    log('File '+p+' added');
-    if(/torrent(\.[0-9]*)?/.test(path.extname(p))) {
-      var fullpath = __dirname+'/'+p;
+    var fullpath = __dirname+'/'+p;
+    if(/torrent(\.[0-9]+)?/.test(p)) {
       rt(fullpath, function(err, ftorrent){
         if(err) {log(err); return;}
         var files = null;
@@ -35,27 +34,22 @@ watcher
         var sources = ftorrent.announce;
         var name = ftorrent.name;
         var infoHash = ftorrent.infoHash;
-        Torrent.findOne({'hash':infoHash},function(err,torrent){
-           if(err){log(err); return;}
-           if(!torrent) {
-             var torrent = new Torrent({
+
+	Torrent.update({'hash':infoHash},{
               'hash': infoHash,
               'name': name,
               'sources': sources,
               'size': size,
               'files': files
-             });
-             torrent.save(function(err){
-               if(err) { log(err); return; }
-               fs.unlink(fullpath);
-             });
-           } else {
-             fs.unlink(fullpath);
-           }
+           }, {'multi': false, 'upsert': true}, function(err, doc) {
+              if(err){log(err); return;}
+              log('File '+p+' added');
+              fs.unlink(fullpath);
         });
       });
     } else {
       log('File '+p+' not a torrent');
+      fs.unlink(fullpath);
     }
   })
   .on('ready', function() { log('Initial scan complete. Ready for changes.'); })
