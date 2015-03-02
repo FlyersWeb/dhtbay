@@ -12,7 +12,7 @@ angular.module('dhtcrawler.index', ['ngRoute', 'ui.bootstrap'])
 
 .controller('IndexCtrl', ['$scope', '$http', function($scope, $http) {
   $scope.currentPage = 1;
-  $scope.maxsize = 10;
+  $scope.maxSize = 10;
   $scope.itemPerPage = 20;
   $scope.term = '';
 
