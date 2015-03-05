@@ -11,14 +11,22 @@ var watcher = chokidar.watch('torrent', {
 
 var Torrent = require('./models/Torrent.js');
 
-var log = console.log.bind(console);
+console.logCopy = console.log.bind(console);
+
+console.log = function(data) {
+   if(arguments.length) {
+      var timestamp = '[' + new Date().toUTCString() + ']';
+      this.logCopy(timestamp, arguments);
+   }
+};
+
 
 watcher
   .on('add', function(p) { 
     var fullpath = __dirname+'/'+p;
     if(/torrent(\.[0-9]+)?/.test(p)) {
       rt(fullpath, function(err, ftorrent){
-        if(err) {log(err); return;}
+        if(err) {console.log(err); return;}
         var files = null;
         var size = 0;
         if( typeof ftorrent.files !== "undefined" ) {
@@ -43,16 +51,16 @@ watcher
               'files': files,
               'added': new Date()
            }, {'multi': false, 'upsert': true}, function(err, doc) {
-              if(err){log(err); return;}
-              log('File '+p+' added');
+              if(err){console.log(err); return;}
+              console.log('File '+p+' added');
               fs.unlink(fullpath);
         });
       });
     } else {
-      log('File '+p+' not a torrent');
+      console.log('File '+p+' not a torrent');
       fs.unlink(fullpath);
     }
   })
-  .on('ready', function() { log('Initial scan complete. Ready for changes.'); })
-  .on('error', function(error) { log('Error happened', error); watcher.close(); });
+  .on('ready', function() { console.log('Initial scan complete. Ready for changes.'); })
+  .on('error', function(error) { console.log('Error happened', error); watcher.close(); });
 

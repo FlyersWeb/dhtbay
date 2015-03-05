@@ -6,7 +6,14 @@ var redis = require("redis");
 
 var Table = require('./models/Table.js');
 
-var log = console.log.bind(console);
+console.logCopy = console.log.bind(console);
+
+console.log = function(data) {
+   if(arguments.length) {
+      var timestamp = '[' + new Date().toUTCString() + ']';
+      this.logCopy(timestamp, arguments);
+   }
+};
 
 
 var DHTTable = function() {
@@ -45,11 +52,11 @@ Table.findOne({}, function(err,table){
   }
 
   dht.listen(6881, function(){
-    log('now listening');
+    console.log('now listening');
   });
 
   dht.on('ready',function() {
-    log('now ready');
+    console.log('now ready');
     setInterval( function() {
       dhtTable.triggerSave(dht);
     }, 600000);
@@ -58,12 +65,13 @@ Table.findOne({}, function(err,table){
   dht.on('announce', function(addr, infoHash) {
     dht.lookup(infoHash);
     client.rpush("DHTS", infoHash.toString());
-    log('announce');
-    log(addr+' : '+infoHash);
+    console.log('announce');
+    console.log(addr+' : '+infoHash);
   });
 
   dht.on('peer', function(addr, infoHash, from) {
-    //log('peer');
+    //console.log('peer');
+    //console.log(from+' : '+infoHash);
   });
 
   dht.on('error',function(err) {
