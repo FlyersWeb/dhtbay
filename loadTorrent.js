@@ -22,7 +22,7 @@ console.log = function(data) {
 
 
 watcher
-  .on('add', function(p) { 
+  .on('change', function(p) { 
     var fullpath = __dirname+'/'+p;
     if(/torrent(\.[0-9]+)?/.test(p)) {
       rt(fullpath, function(err, ftorrent){
