@@ -26,17 +26,17 @@ DHTTable.prototype.triggerSave = function(dht) {
 
 var dhtTable = new DHTTable();
 dhtTable.on('save', function(dht) {
-  log('save');
   var dhtTable = dht.toArray();
   Table.findOne({}, function(err, table) {
-    if(err) { log(err); return; }
+    if(err) { console.log(err); return; }
     if(!table) {
       var table = new Table({'table': dhtTable});
     } else {
       table.table = dhtTable;
     }
     table.save(function(err) {
-      if(err) { log(err); return; }
+      if(err) { console.log(err); return; }
+      console.log("Saved routing table");
     });
   });
 });
@@ -44,7 +44,7 @@ dhtTable.on('save', function(dht) {
 var DHT = require('bittorrent-dht');
 
 Table.findOne({}, function(err,table){
-  if(err) { log(err); return; }
+  if(err) { console.log(err); return; }
   if(table) {
     var dht = new DHT({ bootstrap: table.table });
   } else {
