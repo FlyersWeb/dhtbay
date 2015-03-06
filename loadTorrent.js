@@ -22,7 +22,8 @@ console.log = function(data) {
 
 
 watcher
-  .on('change', function(p) { 
+  .on('add', function(p) {
+    console.log("Detected file " + p); 
     var fullpath = __dirname+'/'+p;
     if(/torrent(\.[0-9]+)?/.test(p)) {
       rt(fullpath, function(err, ftorrent){
