@@ -27,17 +27,9 @@ DHTTable.prototype.triggerSave = function(dht) {
 var dhtTable = new DHTTable();
 dhtTable.on('save', function(dht) {
   var dhtTable = dht.toArray();
-  Table.findOne({}, function(err, table) {
+  Table.update({}, { $set: { table: dhtTable }}, { upsert: true }, function(err, table) {
     if(err) { console.log(err); return; }
-    if(!table) {
-      var table = new Table({'table': dhtTable});
-    } else {
-      table.table = dhtTable;
-    }
-    table.save(function(err) {
-      if(err) { console.log(err); return; }
-      console.log("Saved routing table");
-    });
+    if(table) { console.log("Saved routing table"); }
   });
 });
 
