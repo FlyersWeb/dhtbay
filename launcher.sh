@@ -1,5 +1,5 @@
 #!/bin/bash
-
+mkdir -p logs torrent
 aria2c -q -j 10 --log-level=notice --http-accept-gzip=true --follow-torrent=false --enable-dht --dht-listen-port=6882 --enable-rpc --bt-metadata-only=true --bt-save-metadata=true --bt-stop-timeout=40 --bt-tracker="udp://tracker.publicbt.com:80/announce,udp://tracker.openbittorrent.com:80/announce,udp://open.demonii.com:1337/announce" --dir=$(pwd)/torrent -l ./logs/aria2c.log &
 sleep 10
 forever start ./portal/bin/www > ./logs/server.log &
