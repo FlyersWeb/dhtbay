@@ -1,1 +1,5 @@
 node_modules
+logs/*
+!logs/.gitkeep
+torrent/*
+!torrent/.gitkeep
