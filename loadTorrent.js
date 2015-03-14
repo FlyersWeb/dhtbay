@@ -9,7 +9,7 @@ var watcher = chokidar.watch('torrent', {
   ignored: /[\/\\]\./, persistent: true
 });
 
-var Torrent = require('./models/Torrent.js');
+var Torrent = require('./dht-portal/models/Torrent.js');
 
 console.logCopy = console.log.bind(console);
 
