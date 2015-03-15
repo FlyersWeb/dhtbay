@@ -22,10 +22,18 @@ apt-get install nodejs
 sudo npm install -g forever
 ```
 
+#### Install dht-portal
+
+```
+git submodule init
+git submodule update
+```
+
 #### Install dependencies
 
 ```
 npm install
+cd dht-portal && npm install
 ```
 
 #### Launch the launcher
