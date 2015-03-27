@@ -9,7 +9,7 @@ var watcher = chokidar.watch('torrent', {
   ignored: /[\/\\]\./, persistent: true
 });
 
-var Torrent = require('./dht-portal/models/Torrent.js');
+var Torrent = require('./models/Torrent.js');
 
 console.logCopy = console.log.bind(console);
 
@@ -44,17 +44,22 @@ watcher
         var name = ftorrent.name;
         var infoHash = ftorrent.infoHash;
 
-	Torrent.update({'hash':infoHash},{
-              'hash': infoHash,
-              'name': name,
-              'sources': sources,
+        Torrent.findById(infoHash, function(err, torrent){
+          if(err) {console.log(err); return;}
+          if(!torrent) {
+            var t = new Torrent({
+              '_id': infoHash,
+              'title': name,
+              'details': sources,
               'size': size,
               'files': files,
-              'added': new Date()
-           }, {'multi': false, 'upsert': true}, function(err, doc) {
-              if(err){console.log(err); return;}
+              'imported': new Date()
+            });
+            t.save(function(err){
               console.log('File '+p+' added');
               fs.unlink(fullpath);
+            });
+          }
         });
       });
     } else {
