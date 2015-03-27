@@ -6,7 +6,6 @@ var TorrentSchema = mongoose.Schema({
   title: { type: String, index: true },
   category: { type: String, default: "Unknown", index: true },
   details: { type: [String], default: [] },
-  sources: { type: [String], default: [] },
   size: { type: Number, default: 0 },
   files: { type: [String], default: [] },
   swarm: {
