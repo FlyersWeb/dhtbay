@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/dhtcrawler');
+mongoose.connect('mongodb://localhost/bitcannon');
 
 var TorrentSchema = mongoose.Schema({
   _id: { type: String, index: true },
