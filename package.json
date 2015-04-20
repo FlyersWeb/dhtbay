@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "aria2": "0.0.6",
+    "async": "^0.9.0",
     "bencode": "0.6.0",
     "bittorrent-dht": "^2.6.4",
     "chokidar": "^1.0.0-rc3",

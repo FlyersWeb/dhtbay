@@ -1,15 +1,13 @@
 var fs = require('fs');
 var path = require('path');
 
-var chokidar = require('chokidar');
+var async = require('async');
 
 var rt = require('read-torrent');
 
-var watcher = chokidar.watch('torrent', {
-  ignored: /[\/\\]\./, persistent: true
-});
+var Torrent = require(__dirname+'/models/Torrent.js');
 
-var Torrent = require('./models/Torrent.js');
+var TORRENT_PATH = __dirname+"/torrent";
 
 console.logCopy = console.log.bind(console);
 
@@ -21,13 +19,19 @@ console.log = function(data) {
 };
 
 
-watcher
-  .on('add', function(p) {
-    console.log("Detected file " + p); 
-    var fullpath = __dirname+'/'+p;
-    if(/torrent(\.[0-9]+)?/.test(p)) {
-      rt(fullpath, function(err, ftorrent){
-        if(err) {console.log(err); return;}
+fs.readdir(TORRENT_PATH, function(err, files) {
+  if(err) { console.log(err); process.exit(1); }
+  var ffiles = files.map(function(file){
+    return path.join(TORRENT_PATH, file);
+  }).filter(function(file){
+    return ( fs.statSync(file).isFile() && ( /\.torrent/.test(file) ) );
+  });
+  async.each(ffiles, 
+    function(file, callback){
+      var ofile = file;
+      rt(ofile, function(err, ftorrent){
+        if(err) {console.log(err); callback();}
+        console.log("treating file : "+ofile);
         var files = null;
         var size = 0;
         if( typeof ftorrent.files !== "undefined" ) {
@@ -43,9 +47,9 @@ watcher
         var sources = ftorrent.announce;
         var name = ftorrent.name;
         var infoHash = ftorrent.infoHash;
-
+        
         Torrent.findById(infoHash, function(err, torrent){
-          if(err) {console.log(err); return;}
+          if(err) {console.log(err); callback();}
           if(!torrent) {
             var t = new Torrent({
               '_id': infoHash,
@@ -56,17 +60,18 @@ watcher
               'imported': new Date()
             });
             t.save(function(err){
-              console.log('File '+p+' added');
-              fs.unlink(fullpath);
+              console.log('File '+ofile+' added');
             });
+          } else {
+            console.log('Torrent '+infoHash+' already present.');
           }
+          fs.unlinkSync(ofile);
+          callback();
         });
       });
-    } else {
-      console.log('File '+p+' not a torrent');
-      fs.unlink(fullpath);
-    }
-  })
-  .on('ready', function() { console.log('Initial scan complete. Ready for changes.'); })
-  .on('error', function(error) { console.log('Error happened', error); watcher.close(); });
-
+    }, 
+    function(err){
+      if(err) {console.log(err); process.exit(1);}
+      process.exit();
+    });
+});

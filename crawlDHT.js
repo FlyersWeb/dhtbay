@@ -4,7 +4,7 @@ var util = require('util');
 var redis = require("redis");
     client = redis.createClient();
 
-var Table = require('./models/Table.js');
+var Table = require(__dirname+'/models/Table.js');
 
 console.logCopy = console.log.bind(console);
 

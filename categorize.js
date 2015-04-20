@@ -1,6 +1,6 @@
 var path = require('path');
 
-var Torrent = require('./models/Torrent.js');
+var Torrent = require(__dirname+'/models/Torrent.js');
 
 var extToIgnore = [
       '.url', '.txt', '.ico', '.srt', '.gif', '.log', 
