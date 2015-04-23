@@ -4,4 +4,3 @@ aria2c -q -j 10 --log-level=notice --http-accept-gzip=true --follow-torrent=fals
 sleep 10
 node ./crawlDHT.js > ./logs/crawl.log &
 node ./loadDHT.js > ./logs/download.log &
-node ./loadTorrent.js > ./logs/load.log &

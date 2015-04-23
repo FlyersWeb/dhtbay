@@ -31,6 +31,7 @@ console.log = function(data) {
 
 
 Torrent.find({'category':/Unknown/}).stream().on('data', function(torrent){
+  console.log("Treating "+torrent._id+" categorization");
   if(typeof torrent.files !== "undefined") {
     var files = torrent.files;
     var exts = [];
@@ -66,7 +67,8 @@ Torrent.find({'category':/Unknown/}).stream().on('data', function(torrent){
     }
     torrent.category=category;
     torrent.save(function(err){
-      if(err) {console.log(err);}
+      if(err) {console.log(err); process.exit(1);}
+      console.log("Categorized as "+category+" !");
     })
   }
 }).on('close', function(){
