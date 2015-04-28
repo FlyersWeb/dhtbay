@@ -17,7 +17,7 @@ var port = 6887;
 var lastWeek = new Date();
 lastWeek.setDate(lastWeek.getDate() - 7);
 
-var stream = Torrent.find({ 'lastmod' : { $lte : lastWeek } }).stream();
+var stream = Torrent.find({ 'lastmod' : { $lt : lastWeek } }).sort({'lastmod': -1}).limit(2000).stream();
 stream.on('data', function(torrent) {
 	
 	var parsedTorrent = { 'infoHash': torrent._id, 'length': torrent.size, 'announce': torrent.details };
@@ -30,7 +30,10 @@ stream.on('data', function(torrent) {
 		console.log("number of leechers : "+data.incomplete);
 		torrent.swarm.seeders = data.complete;
 		torrent.swarm.leechers = data.incomplete;
+		torrent.lastmod = new Date();
 		torrent.save(function(err) {
+			if(err) { console.log("Error while saving"+err); return; }
+			console.log("Torrent saved : "+torrent._id);
 		});
 	});
 	client.on('error', function(err) {
@@ -41,4 +44,8 @@ stream.on('data', function(torrent) {
 
 stream.on('error', function(err) {
 	console.log("Error when streaming data : "+err); process.exit(1);
+});
+
+stream.on('close', function() {
+	process.exit(0);
 });
