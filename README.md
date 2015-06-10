@@ -39,10 +39,12 @@ vim ./config/database.js
 Some tasks can be added in a cron treatment. For example this is my CRON configuration :
 
 ```
+# Update swarm only once a day
+40 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/updateSeed.js 2>&1 > /home/dhtcrawl/log/update.log
 # Categorize only once a day
-30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js >> /home/dhtcrawl/log/categorize.log
+20 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js 2>&1 > /home/dhtcrawl/log/categorize.log
 # Load torrent metadata to database each 30 minutes and remove them
-*/30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/loadTorrent.js >> /home/dhtcrawl/log/load.log
+*/30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/loadTorrent.js 2>&1 > /home/dhtcrawl/log/load.log
 ```
 
 #### Launch the launcher
@@ -65,6 +67,7 @@ The project is composed of 4 modules as presented. Each module is independant an
 +  **crawlDHT.js** is responsible for crawling hashs from the DHT network. It will push hashes on a redis list called *DHTS*. It also provides a routing table backup system saving it each 10 minutes in a mongo collection called table.
 +  **loadDHT.js** is responsible of loading hashes from the redis list *DHTS* and to download torrent metadat for indexation. It rely intensely on *aria2* tool and tray to download it from torcache, torrage and through DHT.
 +  **loadTorrent.js** is responsible of saving metadatas into our mongo instance in collection torrents. This will be our basis data.
++  **updateSeed.js** will try to update swarm so you're able to know whose torrent are already active before launching download. You can force full refresh by passing forceAll argument.
 +  **categorize.js** will try to categorize crawled torrent depending on file extensions. This module could be improved a lot but it allows you to navigate easily in bitcannon.
 
 Using the **launcher.sh**, all modules will be executed and your database will be populated automatically.

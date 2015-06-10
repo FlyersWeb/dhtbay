@@ -12,32 +12,46 @@ console.log = function(data) {
 	}
 };
 
+var args = process.argv.slice(2);
+
 var peerId = new Buffer('01234567890123456789');
 var port = 6887;
+
 var lastWeek = new Date();
 lastWeek.setDate(lastWeek.getDate() - 7);
+var filter = { 'lastmod' : { $lt : lastWeek } };
 
-var stream = Torrent.find({ 'lastmod' : { $lt : lastWeek } }).sort({'lastmod': -1}).limit(2000).stream();
+if(args.length>0){
+	if(args[0]=="forceAll"){
+		filter = {};
+	}
+}
+
+var stream = Torrent.find(filter).sort({'lastmod': -1}).limit(2000).stream();
 stream.on('data', function(torrent) {
-	
+	var self = this;
+	self.pause();
+	console.log("Processing torrent : "+torrent._id);
 	var parsedTorrent = { 'infoHash': torrent._id, 'length': torrent.size, 'announce': torrent.details };
 
 	var client = Client(peerId, port, parsedTorrent);
-
 	client.on('scrape', function(data) {
-		console.log("got an announce response from tracker: "+data.announce);
+		console.log("got a response from tracker: "+data.announce);
 		console.log("number of seeders : "+data.complete);
 		console.log("number of leechers : "+data.incomplete);
 		torrent.swarm.seeders = data.complete;
 		torrent.swarm.leechers = data.incomplete;
 		torrent.lastmod = new Date();
 		torrent.save(function(err) {
-			if(err) { console.log("Error while saving"+err); return; }
-			console.log("Torrent saved : "+torrent._id);
+			if(err) { console.log("Error while saving"+err); self.resume(); }
+			console.log("Torrent saved : "+torrent._id); self.resume();
 		});
 	});
 	client.on('error', function(err) {
-		console.log("Torrent client error : "+err); return;
+		console.log("Torrent client error : "+err); self.resume();
+	});
+	client.on('warning', function(err) {
+		console.log("Torrent client error : "+err); self.resume();
 	});
 	client.scrape();
 });
@@ -47,5 +61,5 @@ stream.on('error', function(err) {
 });
 
 stream.on('close', function() {
-	process.exit(0);
+	console.log("Stream closed"); process.exit(1);
 });
