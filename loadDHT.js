@@ -1,8 +1,10 @@
 var Aria2 = require('aria2');
+
+var config = require ('./config/database');
 var fs = require('fs');
 
 var redis = require("redis");
-    client = redis.createClient();
+    client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
 
 client.on("error", function(err) {
     if(err) {

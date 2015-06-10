@@ -27,6 +27,13 @@ You could use my fork in order to be able to see torrent files : https://github.
 npm install
 ```
 
+#### Update database information
+
+```
+cp ./config/database.default.js ./config/database.js
+vim ./config/database.js
+```
+
 #### Cron to install
 
 Some tasks can be added in a cron treatment. For example this is my CRON configuration :

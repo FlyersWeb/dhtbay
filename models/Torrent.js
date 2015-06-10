@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://127.0.0.1/bitcannon');
+var config = require('../config/database');
+mongoose.connect(config.db.uri);
 
 var TorrentSchema = mongoose.Schema({
   _id: { type: String, index: true },

@@ -1,8 +1,10 @@
 var EventEmitter = require('events').EventEmitter;
+
+var config = require('./config/database');
 var util = require('util');
 
 var redis = require("redis");
-    client = redis.createClient();
+    client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
 
 var Table = require(__dirname+'/models/Table.js');
 

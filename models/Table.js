@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://127.0.0.1/dhtcrawler');
+var config = require('../config/database');
+mongoose.connect(config.db.uri);
 
 var TableSchema = mongoose.Schema({
   table: { type: [mongoose.Schema.Types.Mixed], default: null },
