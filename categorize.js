@@ -29,9 +29,12 @@ console.log = function(data) {
    }
 };
 
+var filter = { 'category' : /Unknown/ };
 
-Torrent.find({'category':/Unknown/}).stream().on('data', function(torrent){
+var stream = Torrent.find(filter).sort({'lastmod': -1}).limit(100).stream();
+stream.on('data', function(torrent){
   console.log("Treating "+torrent._id+" categorization");
+  var self = this;
   if(typeof torrent.files !== "undefined") {
     var files = torrent.files;
     var exts = [];
@@ -71,6 +74,12 @@ Torrent.find({'category':/Unknown/}).stream().on('data', function(torrent){
       console.log("Categorized as "+category+" !");
     })
   }
-}).on('close', function(){
+})
+
+stream.on('error', function(err) {
+  console.log("Error : "+err); process.exit(1);
+});
+
+stream.on('close', function(){
   process.exit();
 });

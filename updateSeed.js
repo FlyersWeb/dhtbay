@@ -17,9 +17,9 @@ var args = process.argv.slice(2);
 var peerId = new Buffer('01234567890123456789');
 var port = 6887;
 
-var lastWeek = new Date();
-lastWeek.setDate(lastWeek.getDate() - 7);
-var filter = { 'lastmod' : { $lt : lastWeek } };
+var lastDay = new Date();
+lastDay.setDate(lastDay.getDate() - 1);
+var filter = { 'lastmod' : { $lt : lastDay } };
 
 if(args.length>0){
 	if(args[0]=="forceAll"){
@@ -27,7 +27,7 @@ if(args.length>0){
 	}
 }
 
-var stream = Torrent.find(filter).sort({'lastmod': -1}).limit(2000).stream();
+var stream = Torrent.find(filter).sort({'lastmod': -1}).limit(100).stream();
 stream.on('data', function(torrent) {
 	var self = this;
 	self.pause();
@@ -49,9 +49,19 @@ stream.on('data', function(torrent) {
 	});
 	client.on('error', function(err) {
 		console.log("Torrent client error : "+err); self.resume();
+		torrent.lastmod = new Date();
+		torrent.save(function(err) {
+			if(err) { console.log("Error while saving"+err); self.resume(); }
+			console.log("Torrent saved : "+torrent._id); self.resume();
+		});
 	});
 	client.on('warning', function(err) {
 		console.log("Torrent client error : "+err); self.resume();
+		torrent.lastmod = new Date();
+		torrent.save(function(err) {
+			if(err) { console.log("Error while saving"+err); self.resume(); }
+			console.log("Torrent saved : "+torrent._id); self.resume();
+		});
 	});
 	client.scrape();
 });
