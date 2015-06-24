@@ -31,10 +31,11 @@ console.log = function(data) {
 
 var filter = { 'category' : /Unknown/ };
 
-var stream = Torrent.find(filter).sort({'lastmod': -1}).limit(100).stream();
+var stream = Torrent.find(filter).sort({'imported': -1}).limit(100).stream();
 stream.on('data', function(torrent){
-  console.log("Treating "+torrent._id+" categorization");
   var self = this;
+  self.pause();
+  console.log("Treating "+torrent._id+" categorization");
   if(typeof torrent.files !== "undefined") {
     var files = torrent.files;
     var exts = [];
@@ -54,7 +55,7 @@ stream.on('data', function(torrent){
       return value.length !== 0
     });
 
-    var category = 'Unknown';
+    var category = 'Other';
     for(var k in extToCateg) {
       var v = extToCateg[k];
       //if too much extensions we can't know
@@ -72,6 +73,7 @@ stream.on('data', function(torrent){
     torrent.save(function(err){
       if(err) {console.log(err); process.exit(1);}
       console.log("Categorized as "+category+" !");
+      self.resume();
     })
   }
 })
