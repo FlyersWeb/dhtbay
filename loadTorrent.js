@@ -30,7 +30,7 @@ fs.readdir(TORRENT_PATH, function(err, files) {
     function(file, callback){
       var ofile = file;
       rt(ofile, function(err, ftorrent){
-        if(err) {console.log(err); callback();}
+        if(err) {console.log(err); callback(); return;}
         console.log("treating file : "+ofile);
         var files = null;
         var size = 0;
