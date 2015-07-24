@@ -49,19 +49,9 @@ stream.on('data', function(torrent) {
 	});
 	client.on('error', function(err) {
 		console.log("Torrent client error : "+err); self.resume();
-		torrent.lastmod = new Date();
-		torrent.save(function(err) {
-			if(err) { console.log("Error while saving"+err); self.resume(); }
-			console.log("Torrent saved : "+torrent._id); self.resume();
-		});
 	});
 	client.on('warning', function(err) {
 		console.log("Torrent client error : "+err); self.resume();
-		torrent.lastmod = new Date();
-		torrent.save(function(err) {
-			if(err) { console.log("Error while saving"+err); self.resume(); }
-			console.log("Torrent saved : "+torrent._id); self.resume();
-		});
 	});
 	client.scrape();
 });
