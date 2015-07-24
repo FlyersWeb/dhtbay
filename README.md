@@ -16,6 +16,12 @@ apt-get install redis-server redis-tools mongodb aria2
 apt-get install nodejs
 ```
 
+#### Install forever tool
+
+```
+sudo npm install forever -g
+```
+
 #### Install bitcannon
 
 See bitcannon repository for this : https://github.com/Stephen304/bitcannon. 
