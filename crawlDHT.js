@@ -1,3 +1,7 @@
+var mongoose = require('mongoose');
+var config = require('./config/database');
+mongoose.connect(config.db.uri);
+
 var EventEmitter = require('events').EventEmitter;
 
 var config = require('./config/database');

@@ -1,16 +1,11 @@
+var mongoose = require('mongoose');
+var config = require('./config/database');
+mongoose.connect(config.db.uri);
+
 var path = require('path');
 
 var Torrent = require(__dirname+'/models/Torrent.js');
 
-var extToIgnore = [
-      '.url', '.txt', '.ico', '.srt', '.gif', '.log', 
-      '.nfo', '.cbr', '.ass', '.lnk', '.rtf', '.bc!', 
-      '.bmp', '.m3u', '.mht', '.cue', '.sfv', '.diz',
-      '.azw3', '.odt', '.chm', '.md5', '.idx', '.sub',
-      '.ini', '.html', '.ssa', '.lit', '.xml', '.clpi',
-      '.bup', '.ifo', '.htm', '.info', '.css', '.php', 
-      '.js', '.jar', '.json', '.sha', '.docx', '.csv'
-    ];
 var extToCateg = {
   'Images' : ['.png', '.jpeg', '.jpg'],    
   'Program' : ['.exe'],
@@ -41,7 +36,7 @@ stream.on('data', function(torrent){
     var exts = [];
     files.forEach(function(file){
       var ext = path.extname(file).toLowerCase();
-      if( extToIgnore.indexOf(ext) < 0 ) {
+      if( config.extToIgnore.indexOf(ext) < 0 ) {
         if(ext.length < 6) {
           exts.push( ext ); 
         }
@@ -72,7 +67,7 @@ stream.on('data', function(torrent){
     torrent.category=category;
     torrent.save(function(err){
       if(err) {console.log(err); process.exit(1);}
-      console.log("Categorized as "+category+" !");
+      console.log(torrent._id+" categorized as "+category+"!");
       self.resume();
     })
   }

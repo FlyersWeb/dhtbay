@@ -1,3 +1,7 @@
+var mongoose = require('mongoose');
+var config = require('./config/database');
+mongoose.connect(config.db.uri);
+
 var fs = require('fs');
 var path = require('path');
 

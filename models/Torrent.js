@@ -1,6 +1,4 @@
 var mongoose = require('mongoose');
-var config = require('../config/database');
-mongoose.connect(config.db.uri);
 
 var TorrentSchema = mongoose.Schema({
   _id: { type: String, index: true },
