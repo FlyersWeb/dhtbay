@@ -25,17 +25,15 @@ var filter = { $nor: [ { 'category' : /Unknown/ }, { 'category' : /Other/ } ] };
 var stream = Torrent.find(filter).sort({'imported': -1}).stream();
 stream.on('data', function(torrent){
   var self = this;
-  console.log("Treating "+torrent._id+" categorization");
+  console.log("Adding "+torrent._id+" training");
   
   if(typeof torrent.files !== "undefined") {
     var files = torrent.files;
     var exts = [];
     files.forEach(function(file){
       var ext = path.extname(file).toLowerCase();
-      if( config.extToIgnore.indexOf(ext) < 0 ) {
-        if(ext.length < 6) {
-          exts.push( ext ); 
-        }
+      if(ext.length < config.limitExt) {
+        exts.push( ext ); 
       }
     });
     exts = exts.filter( function(value){

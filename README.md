@@ -50,7 +50,7 @@ Some tasks can be added in a cron treatment. For example this is my CRON configu
 # Bayesian Categorization only once a day
 20 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/classifier.js 2>&1 > /home/dhtcrawl/log/classifier.log
 # Categorize only once a day
-20 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js 2>&1 > /home/dhtcrawl/log/categorize.log
+30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js 2>&1 > /home/dhtcrawl/log/categorize.log
 # Load torrent metadata to database each 30 minutes and remove them
 */30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/loadTorrent.js 2>&1 > /home/dhtcrawl/log/load.log
 ```
@@ -88,7 +88,7 @@ IMPROVEMENTS
 ------------
 
 + <s>Add a seed/leech crawler to know which torrent is dead or not.</s>
-+ Improve categorization to support more extensions.
++ Improve categorization to support more extensions. Use an API extension/categorization.
 + <s>Use bayesian categorization optimization.</s>
 
 Have fun.

@@ -28,7 +28,7 @@ Classifier.findOne( {} , function( err, dbClassifier ) {
 
   var classifier = natural.BayesClassifier.restore(JSON.parse(dbClassifier.raw));
 
-  var stream = Torrent.find(filter).sort({'imported': -1}).limit(1000).stream();
+  var stream = Torrent.find(filter).sort({'imported': -1}).limit(100).stream();
   stream.on('data', function(torrent){
     var self = this;
     self.pause();
@@ -39,7 +39,9 @@ Classifier.findOne( {} , function( err, dbClassifier ) {
       files.forEach(function(file){
         var ext = path.extname(file).toLowerCase();
         if( config.extToIgnore.indexOf(ext) < 0 ) {
-          exts.push( ext ); 
+          if( ext.length < config.limitExt ) {
+            exts.push( ext ); 
+          }
         }
       });
       exts = exts.filter( function(value){
@@ -48,7 +50,14 @@ Classifier.findOne( {} , function( err, dbClassifier ) {
 
       var category = 'Other';
       
-      category = classifier.classify(exts);
+      if(exts.length > 0) {
+        var classifications = classifier.getClassifications(exts);
+        if(classifications[0].value * Math.pow(10,8) > 1) {
+          if( (classifications[0].value-classifications[1].value)*Math.pow(10,8)>10 ) {
+	    category=classifications[0].label;
+          }
+        }
+      }
 
       torrent.category=category;
 
