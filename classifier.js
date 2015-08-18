@@ -18,6 +18,12 @@ console.log = function(data) {
    }
 };
 
+function precision(a) {
+   var e = 1;
+   while (Math.round(a * e) / e !== a) e *= 10;
+   return Math.round(Math.log(e) / Math.LN10);
+};
+
 var filter = { 'category' : /Other/ };
 
 Classifier.findOne( {} , function( err, dbClassifier ) {
@@ -53,7 +59,13 @@ Classifier.findOne( {} , function( err, dbClassifier ) {
       if(exts.length > 0) {
         var classifications = classifier.getClassifications(exts);
         if(classifications[0].value * Math.pow(10,8) > 1) {
-          if( (classifications[0].value-classifications[1].value)*Math.pow(10,8)>10 ) {
+          var valA = classifications[0].value; var valB = classifications[1].value;
+          // Detect incertitude to limit classification
+          var cprecision = precision(valA);
+          var clength = (valA*Math.pow(10,cprecision)).toString().length;
+          valA = valA*Math.pow(10,cprecision);
+          valB = valB*Math.pow(10,cprecision);
+          if( ((valA-valB)/valA) > 0.4 )  {
 	    category=classifications[0].label;
           }
         }
@@ -63,9 +75,10 @@ Classifier.findOne( {} , function( err, dbClassifier ) {
 
       torrent.save(function(err){
         if(err) {console.log(err); process.exit(1);}
-        console.log(torrent._id+" categorized as "+category+"!");
+        console.log(torrent._id+" categorized as "+torrent.category+"!");
         self.resume();
       });
+
     }
   });
 
