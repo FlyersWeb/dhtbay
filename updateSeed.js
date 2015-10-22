@@ -47,7 +47,7 @@ stream.on('data', function(torrent) {
 		torrent.swarm.leechers = data.incomplete;
 		torrent.lastmod = new Date();
 		torrent.save(function(err) {
-			if(err) { console.log("Error while saving"+err); self.resume(); }
+			if(err) { console.log("Error while saving"+err); }
 			console.log("Torrent saved : "+torrent._id); self.resume();
 		});
 	});
