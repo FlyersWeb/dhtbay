@@ -45,11 +45,12 @@ function run() {
     var torcache = TORCACHE.replace('{DHTHASH}',hash.toString().toUpperCase());
     var torrage = TORRAGE.replace('{DHTHASH}',hash.toString().toUpperCase());
     aria2.send('getVersion', function(err,res){
-      if(err) {aria2.close(); console.log(err); return;}
+      if(err) { console.log(err); return;}
       aria2.open(function(){
         aria2.send('addUri',[magnet,torcache,torrage],function(err,res){
-          if(err) {aria2.close(); console.log(err); return;}
+          if(err) { console.log(err); return;}
           console.log("Added : "+magnet+" => "+res);
+          client.rpush("TORS", hash.toString());
           aria2.close();
         })
       });
