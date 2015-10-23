@@ -47,7 +47,7 @@ function run() {
     aria2.send('getVersion', function(err,res){
       if(err) { console.log(err); return;}
       aria2.open(function(){
-        aria2.send('addUri',[magnet,torcache,torrage],function(err,res){
+        aria2.send('addUri',[torcache],function(err,res){
           if(err) { console.log(err); return;}
           console.log("Added : "+magnet+" => "+res);
           client.rpush("TORS", hash.toString());

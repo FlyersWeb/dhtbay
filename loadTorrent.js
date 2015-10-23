@@ -33,12 +33,11 @@ function run() {
   client.lpop("TORS", function(err, file){
     if(err) { console.log(err); return; }
     if(!file) { return; }
-    file = path.join(TORRENT_PATH, file.toUpperCase())+'.torrent';
-    if ( !fs.statSync(file).isFile() && !( /\.torrent/.test(file) ) ) { console.log("invalid file"); return; }
-    var ofile = file;
+    var ofile = path.join(TORRENT_PATH, file.toUpperCase())+'.torrent';
+    console.log("treating file : "+ofile);
+    if ( !fs.existsSync(ofile) ) { console.log("file do not exists"); return; }
     rt(ofile, function(err, ftorrent){
       if(err) {console.log(err); return;}
-      console.log("treating file : "+ofile);
       var files = null;
       var size = 0;
       if( typeof ftorrent.files !== "undefined" ) {
@@ -80,4 +79,4 @@ function run() {
 
 setInterval(function(){
   run();
-}, 10000);
+}, 30000);
