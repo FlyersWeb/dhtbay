@@ -1,6 +1,4 @@
 var mongoose = require('mongoose');
-var config = require('../config/database');
-mongoose.connect(config.db.uri);
 
 var TorrentSchema = mongoose.Schema({
   _id: { type: String, index: true },
@@ -10,11 +8,11 @@ var TorrentSchema = mongoose.Schema({
   size: { type: Number, default: 0 },
   files: { type: [String], default: [] },
   swarm: {
-    seeders: { type: Number, default: 0 },
+    seeders: { type: Number, default: 0, index: true },
     leechers: { type: Number, default: 0 }
   },
   imported: {type: Date, default: Date.now, index: true},
-  lastmod: {type: Date, default: Date.now}
+  lastmod: {type: Date, default: Date.now, index: true}
 });
 var Torrent = mongoose.model('Torrent',TorrentSchema);
 

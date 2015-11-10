@@ -1,6 +1,9 @@
 #!/bin/bash
 
-aria2c -q -j 10 --log-level=notice --http-accept-gzip=true --follow-torrent=false --enable-dht --dht-listen-port=6882 --enable-rpc --bt-metadata-only=true --bt-save-metadata=true --bt-stop-timeout=40 --bt-tracker="udp://tracker.publicbt.com:80/announce,udp://tracker.openbittorrent.com:80/announce,udp://open.demonii.com:1337/announce" --dir=$(pwd)/torrent -l ./logs/aria2c.log &
+PROJPATH=$HOME/dht-bay
+LOGPATH=$PROJPATH/logs
+
+aria2c -q -j 10 --log-level=notice --http-accept-gzip=true --check-certificate=false --follow-torrent=false --enable-rpc --dir=$(pwd)/torrent -l $LOGPATH/aria2c.log &
 sleep 10
-node ./crawlDHT.js 2>&1 > ./logs/crawl.log &
-node ./loadDHT.js 2>&1 > ./logs/download.log &
+forever start -m 10 -o $LOGPATH/crawl.log -e $LOGPATH/crawl.log $PROJPATH/crawlDHT.js
+forever start -m 10 -o $LOGPATH/download.log -e $LOGPATH/download.log $PROJPATH/loadDHT.js
