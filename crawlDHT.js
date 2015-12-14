@@ -32,21 +32,28 @@ DHTTable.prototype.triggerSave = function(dht) {
 
 var dhtTable = new DHTTable();
 dhtTable.on('save', function(dht) {
-  var dhtTable = dht.toArray();
-  Table.update({}, { $set: { table: dhtTable }}, { upsert: true }, function(err, table) {
-    if(err) { console.log(err); return; }
-    if(table) { console.log("Saved routing table"); }
+  var dhts = dht.toArray();
+  var dhtTable = dhts.map(function(e){
+    var addr = e["addr"];
+    var now = Date.now() / 1000 | 0;
+    var yesterday = now - (60*60*24);
+
+    client.zremrangebyscore("PEERS", -Infinity, yesterday);
+    client.zadd("PEERS", now, addr, function(err){
+      if(err) { console.log(err); return; }
+      console.log("Saved routing table");
+    });
   });
 });
 
 var DHT = require('bittorrent-dht');
 
-Table.findOne({}, function(err,table){
+client.zrange("PEERS", 0, -1, function(err, peers) {
   if(err) { console.log(err); return; }
-  if(table) {
-    var dht = new DHT({ bootstrap: table.table });
-  } else {
+  if(!peers) {
     var dht = new DHT();
+  } else {
+    var dht = new DHT({ bootstrap: peers });
   }
 
   dht.listen(6881, function(){
@@ -75,5 +82,4 @@ Table.findOne({}, function(err,table){
   dht.on('error',function(err) {
     dht.destroy();
   });
-
 });
