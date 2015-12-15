@@ -6,7 +6,7 @@
     "aria2": "0.0.6",
     "async": "^0.9.0",
     "bencode": "0.6.0",
-    "bittorrent-dht": "^2.6.4",
+    "bittorrent-dht": "^5.0.0",
     "bittorrent-tracker": "^3.4.7",
     "chokidar": "^1.0.0-rc3",
     "express": "^4.11.2",
