@@ -50,6 +50,7 @@ function run() {
         aria2.send('addUri',[torcache],function(err,res){
           if(err) { console.log(err); return;}
           console.log("Added : "+magnet+" => "+res);
+          client.rpush("TORS", hash.toString());
           aria2.close();
         })
       });
