@@ -45,33 +45,25 @@ vim ./config/database.js
 Some tasks can be added in a cron treatment. For example this is my CRON configuration :
 
 ```
-# Update swarm every hour
-0 */1 * * * nodejs /home/crawler/dht-bay/updateSeed.js 2>&1 > /home/crawler/dht-bay/logs/update.log
-
-# Update learned classification
-0 0 * * * nodejs /home/crawler/dht-bay/trainer.js 2>&1 > /home/crawler/dht-bay/logs/train.log
-
-# Bayezian classification
-*/20 * * * * nodejs /home/crawler/dht-bay/classifier.js 2>&1 > /home/crawler/dht-bay/logs/classifier.log
-
-# Clean torrents
-*/10 * * * * nodejs /home/crawler/dht-bay/loadFileTorrent.js 2>&1 >> /home/crawler/dht-bay/logs/load.log
-
-# Categorize
-*/30 * * * * nodejs /home/crawler/dht-bay/categorize.js 2>&1 > /home/crawler/dht-bay/logs/categorize.log
+# Update swarm only once a day
+40 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/updateSeed.js 2>&1 > /home/dhtcrawl/log/update.log
+# Bayesian Categorization only once a day
+20 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/classifier.js 2>&1 > /home/dhtcrawl/log/classifier.log
+# Categorize only once a day
+30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js 2>&1 > /home/dhtcrawl/log/categorize.log
+# Load torrent files
+*/10 * * * * nodejs /home/crawler/dht-bay/loadFileTorrent.js 2>&1 > /home/crawler/dht-bay/logs/load.log
 ```
 
-#### Launch the launcher
+#### Launch the crawler and torrent downloader
 
 ```
-sh launcher.sh
+forever start crawlDHT.js
+forever start loadDHT.js
 ```
 
 You'll have your DHT Crawler up and running. Crawling may take some time so be patient.
 
-#### Migration
-
-Because initially the project was using a different data structure, I had to migrate data for bitcannon compatibility. If you need the same, use the migration script from : https://github.com/FlyersWeb/dht-bitcannon.
 
 CONTENT
 -------
