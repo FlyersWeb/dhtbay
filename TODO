@@ -3,5 +3,4 @@ Improve updateSeed
 => For forceAll mode, we need to slowdown process because too much requests are sent
 
 Improve categorize script
-=> Maybe use neural network or bayezian categorization
 => Can we have category based on torrent hash from an API???
