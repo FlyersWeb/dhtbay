@@ -51,21 +51,19 @@ Some tasks can be added in a cron treatment. For example this is my CRON configu
 20 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/classifier.js 2>&1 > /home/dhtcrawl/log/classifier.log
 # Categorize only once a day
 30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js 2>&1 > /home/dhtcrawl/log/categorize.log
-# Load torrent metadata to database each 30 minutes and remove them
-*/30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/loadTorrent.js 2>&1 > /home/dhtcrawl/log/load.log
+# Load torrent files
+*/10 * * * * nodejs /home/crawler/dht-bay/loadFileTorrent.js 2>&1 > /home/crawler/dht-bay/logs/load.log
 ```
 
-#### Launch the launcher
+#### Launch the crawler and torrent downloader
 
 ```
-sh launcher.sh
+forever start crawlDHT.js
+forever start loadDHT.js
 ```
 
-You'll have your DHT Crawler up and running. Access bitcannon portal at address you defined. Crawling may take some time so be patient.
+You'll have your DHT Crawler up and running. Crawling may take some time so be patient.
 
-#### Migration
-
-Because initially the project was using a different data structure, I had to migrate data for bitcannon compatibility. If you need the same, use the migration script from : https://github.com/FlyersWeb/dht-bitcannon.
 
 CONTENT
 -------
@@ -75,7 +73,7 @@ The project is composed of 4 modules as presented. Each module is independant an
 +  **crawlDHT.js** is responsible for crawling hashs from the DHT network. It will push hashes on a redis list called *DHTS*. It also provides a routing table backup system saving it each 10 minutes in a mongo collection called table.
 +  **loadDHT.js** is responsible of loading hashes from the redis list *DHTS* and to download torrent metadat for indexation. It rely intensely on *aria2* tool and tray to download it from torcache, torrage and through DHT.
 +  **loadTorrent.js** is responsible of saving metadatas into our mongo instance in collection torrents. This will be our basis data.
-+  **updateSeed.js** will try to update swarm so you're able to know whose torrent are already active before launching download. You can force full refresh by passing forceAll argument.
+n+  **updateSeed.js** will try to update swarm so you're able to know whose torrent are already active before launching download. You can force full refresh by passing forceAll argument.
 +  **categorize.js** will try to categorize crawled torrent depending on file extensions. Because module only takes a limited number of extensions in account you can use classifier too.
 +  **classifier.js** a bayesian classifier that will classify torrent that couldn't be classed by previous one. In order to work you need to train the classifier.
 +  **trainer.js** the bayesian classifier trainer, based on categorize script classification it helps unknown torrent classification.

@@ -4,3 +4,4 @@ logs/*
 torrent/*
 !torrent/.gitkeep
 config/database.js
+launcher
