@@ -52,16 +52,17 @@ client.zrange("PEERS", 0, -1, function(err, peers) {
     console.log('now ready');
   });
 
-  dht.on('announce', function(addr, infoHash) {
+  dht.on('announce', function(peer, infoHash) {
     dht.lookup(infoHash);
     client.rpush("DHTS", infoHash.toString());
     console.log('announce');
-    console.log(addr+' : '+infoHash);
+    console.log(peer.host + ':' + peer.port+' : '+infoHash);
   });
 
-  dht.on('peer', function(addr, infoHash, from) {
+  dht.on('peer', function(peer, infoHash, from) {
     console.log('peer');
-    dhtTable.triggerSave(addr);
+    dht.lookup(infoHash);
+    dhtTable.triggerSave(peer.host + ':' + peer.port);
   });
 
   dht.on('error',function(err) {
