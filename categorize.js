@@ -24,7 +24,7 @@ console.log = function(data) {
    }
 };
 
-var filter = { 'category' : /Unknown/ };
+var filter = { 'category' : /Other/ };
 
 var stream = Torrent.find(filter).sort({'imported': -1}).limit(100).stream();
 stream.on('data', function(torrent){

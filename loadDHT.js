@@ -44,9 +44,9 @@ function run() {
     var magnet = MAGNET_TEMPLATE.replace('{DHTHASH}',hash.toString().toUpperCase());
     var torcache = TORCACHE.replace('{DHTHASH}',hash.toString().toUpperCase());
     var torrage = TORRAGE.replace('{DHTHASH}',hash.toString().toUpperCase());
-    aria2.send('getVersion', function(err,res){
+    aria2.open(function() {
+      aria2.send('getVersion', function(err,res){
       if(err) { console.log(err); return;}
-      aria2.open(function(){
         aria2.send('addUri',[torcache],function(err,res){
           if(err) { console.log(err); return;}
           console.log("Added : "+magnet+" => "+res);
@@ -54,12 +54,12 @@ function run() {
           aria2.close();
         })
       });
-    })
+    });
   })
 
 }
 
 setInterval(function(){
    run();
-}, 10000);
+}, 5000);
 

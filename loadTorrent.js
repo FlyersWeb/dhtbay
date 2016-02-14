@@ -79,4 +79,4 @@ function run() {
 
 setInterval(function(){
   run();
-}, 30000);
+}, 1000);

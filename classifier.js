@@ -24,7 +24,7 @@ function precision(a) {
    return Math.round(Math.log(e) / Math.LN10);
 };
 
-var filter = { 'category' : /Other/ };
+var filter = { 'category' : /Unknown/ };
 
 Classifier.findOne( {} , function( err, dbClassifier ) {
 
