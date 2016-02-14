@@ -40,6 +40,12 @@ cp ./config/database.default.js ./config/database.js
 vim ./config/database.js
 ```
 
+#### Launch aria2
+
+```
+aria2c -q -j 10 --log-level=notice --http-accept-gzip=true --check-certificate=false --follow-torrent=false --enable-rpc --dir=$(pwd)/torrent -l $(pwd)/logs/aria2c.log &
+```
+
 #### Cron to install
 
 Some tasks can be added in a cron treatment. For example this is my CRON configuration :
