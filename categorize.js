@@ -24,7 +24,7 @@ console.log = function(data) {
    }
 };
 
-var filter = { 'category' : /Other/ };
+var filter = { 'category' : /Unknown/ };
 
 var stream = Torrent.find(filter).sort({'imported': -1}).limit(100).stream();
 stream.on('data', function(torrent){
@@ -50,7 +50,7 @@ stream.on('data', function(torrent){
       return value.length !== 0
     });
 
-    var category = 'Other';
+    var category = 'Unknown';
     for(var k in extToCateg) {
       var v = extToCateg[k];
       //if too much extensions we can't know

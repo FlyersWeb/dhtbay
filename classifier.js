@@ -54,11 +54,11 @@ Classifier.findOne( {} , function( err, dbClassifier ) {
         return value.length !== 0
       });
 
-      var category = 'Other';
+      var category = 'Unknown';
       
       if(exts.length > 0) {
         var classifications = classifier.getClassifications(exts);
-        if(classifications[0].value * Math.pow(10,8) > 1) {
+        if(classifications.length && (classifications[0].value * Math.pow(10,8) > 1)) {
           var valA = classifications[0].value; var valB = classifications[1].value;
           // Detect incertitude to limit classification
           var cprecision = precision(valA);
@@ -66,7 +66,7 @@ Classifier.findOne( {} , function( err, dbClassifier ) {
           valA = valA*Math.pow(10,cprecision);
           valB = valB*Math.pow(10,cprecision);
           if( ((valA-valB)/valA) > 0.4 )  {
-	    category=classifications[0].label;
+            category=classifications[0].label;
           }
         }
       }
