@@ -43,7 +43,7 @@ vim ./config/database.js
 #### Launch aria2
 
 ```
-aria2c -q -j 10 --log-level=notice --http-accept-gzip=true --check-certificate=false --follow-torrent=false --enable-rpc --dir=$(pwd)/torrent -l $(pwd)/logs/aria2c.log &
+aria2c -q -j 10 --log-level=notice --enable-rpc=true --follow-torrent=false --bt-metadata-only=true --bt-save-metadata=true --enable-dht=true --dir=$(pwd)/torrent -l $(pwd)/logs/aria2c.log &
 ```
 
 #### Cron to install
