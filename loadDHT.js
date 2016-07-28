@@ -1,10 +1,12 @@
+"use strict";
+
 const config = require ('./config/database');
 
 const Aria2 = require('aria2');
 const fs = require('fs');
 
 const redis = require("redis");
-    client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
+const client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
 
 const bunyan = require("bunyan");
 const logger = bunyan.createLogger({name: "loader"});
