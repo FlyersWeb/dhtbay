@@ -12,26 +12,26 @@ const logger = bunyan.createLogger({name: "crawler"});
 
 const dht = new DHT();
   
-dht.listen(6881, function(){
+dht.listen(6881, () => {
   logger.info('now listening');
   logger.info(dht.address());
 });
 
-dht.on('ready',function() {
+dht.on('ready', () => {
   logger.info('now ready');
 });
 
-dht.on('announce', function(peer, infoHash) {
+dht.on('announce', (peer, infoHash) => {
   logger.info(`announce : ${peer.host}:${peer.port} : ${infoHash.toString('hex')}`);
   dht.lookup(infoHash);
   client.rpush("DHTS", infoHash.toString('hex'));
 });
 
-dht.on('peer', function(peer, infoHash, from) {
+dht.on('peer', (peer, infoHash, from) => {
   logger.info(`announce : ${peer.host}:${peer.port} : ${infoHash.toString('hex')}`);
 });
 
-dht.on('error',function(err) {
+dht.on('error', (err) => {
   logger.error(err);
   dht.destroy();
 });
