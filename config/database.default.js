@@ -7,6 +7,10 @@ var config = {
 		host : '127.0.0.1',
 		options : {}
 	},
+    trackers: [
+    "udp://tracker.openbittorrent.com:80/announce",
+    "udp://tracker.piratepublic.com:1337/announce"
+  ],
         limitExt : 8,
         extToIgnore : [
           '.url', '.txt', '.ico', '.srt', '.gif', '.log', 
