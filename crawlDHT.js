@@ -28,7 +28,7 @@ dht.on('announce', (peer, infoHash) => {
 });
 
 dht.on('peer', (peer, infoHash, from) => {
-  logger.info(`announce : ${peer.host}:${peer.port} : ${infoHash.toString('hex')}`);
+  logger.debug(`peer : ${peer.host}:${peer.port} : ${infoHash.toString('hex')}`);
 });
 
 dht.on('error', (err) => {
