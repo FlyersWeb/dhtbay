@@ -51,8 +51,6 @@ aria2c -q -j 10 --log-level=notice --enable-rpc=true --enable-dht=true --enable-
 Some tasks can be added in a cron treatment. For example this is my CRON configuration :
 
 ```
-# Update swarm only once a day
-40 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/updateSeed.js 2>&1 > /home/dhtcrawl/log/update.log
 # Bayesian Categorization only once a day
 20 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/classifier.js 2>&1 > /home/dhtcrawl/log/classifier.log
 # Categorize only once a day
@@ -79,7 +77,6 @@ The project is composed of 4 modules as presented. Each module is independant an
 +  **crawlDHT.js** is responsible for crawling hashs from the DHT network. It will push hashes on a redis list called *DHTS*. It also provides a routing table backup system saving it each 10 minutes in a mongo collection called table.
 +  **loadDHT.js** is responsible of loading hashes from the redis list *DHTS* and to download torrent metadat for indexation. It rely intensely on *aria2* tool and tray to download it from torcache, torrage and through DHT.
 +  **loadTorrent.js** is responsible of saving metadatas into our mongo instance in collection torrents. This will be our basis data.
-+  **updateSeed.js** will try to update swarm so you're able to know whose torrent are already active before launching download. You can force full refresh by passing forceAll argument.
 +  **categorize.js** will try to categorize crawled torrent depending on file extensions. Because module only takes a limited number of extensions in account you can use classifier too.
 +  **classifier.js** a bayesian classifier that will classify torrent that couldn't be classed by previous one. In order to work you need to train the classifier.
 +  **trainer.js** the bayesian classifier trainer, based on categorize script classification it helps unknown torrent classification.
