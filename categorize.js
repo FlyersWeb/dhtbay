@@ -14,7 +14,7 @@ const logger = bunyan.createLogger({name: "categorize"});
 
 const filter = { 'category' : /Unknown/ };
 
-const specialIgnores = () => {
+const dynamicToIgnore = () => {
   const pad = (n, width, z) => {
     z = z || '0';
     n = n + '';
@@ -37,6 +37,15 @@ const specialIgnores = () => {
   return result;
 }
 
+function findCategoryBasedOnExtensions(exts) {
+  return Object.keys(config.extToCateg)
+    .map(categ => { // browse category extensions
+      if ( config.extToCateg[categ].some(c => exts.includes(c)) )
+      return categ;
+    })
+    .find((c) => c !== undefined); // find the first category
+}
+
 const cursor = Torrent.find(filter).sort({'imported': -1}).limit(100).cursor();
 cursor.eachAsync(torrent => {
   logger.info(`Treating ${torrent._id} categorization`);
@@ -48,7 +57,7 @@ cursor.eachAsync(torrent => {
     .map(file => path.extname(file).toLowerCase())
     .filter(ext => ext.length > 0) // no empty
     .filter(ext => !config.extToIgnore.includes(ext)) // no ignored
-    .filter(ext => !specialIgnores().includes(ext)) // no special ignored
+    .filter(ext => !dynamicToIgnore().includes(ext)) // no special ignored
     .filter(ext => ext.length < config.limitExt) // with min length
     .slice() // shallow copy
     .sort() // sort
@@ -61,13 +70,7 @@ cursor.eachAsync(torrent => {
     return Promise.reject(`Torrent ${torrent._id} has no too many extensions!`);
   }
 
-  const category = Object.keys(config.extToCateg)
-    .map(categ => { // browse category extensions
-      if ( config.extToCateg[categ].some(c => exts.includes(c)) )
-      return categ;
-    })
-    .find((c) => c !== undefined); // find the first category
-
+  const category = findCategoryBasedOnExtensions(exts);
   torrent.category = category || "Unknown";
   return torrent.save();
 })
