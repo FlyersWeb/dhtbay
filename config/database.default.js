@@ -28,28 +28,6 @@ var config = {
           '.mpls', '.clpi', '.bdmv', '.cdd', '.dbf', 
           '.vmx', '.vmsd', '.vmxf', '.nvram'
         ],
-	specialIgnore : []
 };
-
-
-//Remove default ISO
-function pad(n, width, z) {
-  z = z || '0';
-  n = n + '';
-  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
-for(var i=2; i<100; i++) {
-  config.specialIgnore.push('.s'+pad(i,2));
-  config.specialIgnore.push('.r'+pad(i,2));
-  config.specialIgnore.push('.z'+pad(i,2));
-  config.specialIgnore.push('.'+pad(i,2));
-}
-for(var i=2; i<1000; i++) {
-  config.specialIgnore.push('.s'+pad(i,3));
-  config.specialIgnore.push('.r'+pad(i,3));
-  config.specialIgnore.push('.z'+pad(i,3));
-  config.specialIgnore.push('.'+pad(i,3));
-}
-
 
 module.exports = config;
