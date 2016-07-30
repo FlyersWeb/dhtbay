@@ -1,10 +1,16 @@
 "use strict";
 
-const mongoose = require('mongoose');
 const config = require('./config/database');
+
+const Promise = require("bluebird");
+
+const mongoose = require('mongoose');
+mongoose.Promise = Promise;
 mongoose.connect(config.db.uri);
 
 const fs = require('fs');
+Promise.promisifyAll(fs);
+
 const path = require('path');
 
 const async = require('async');
@@ -18,61 +24,71 @@ const TORRENT_PATH = __dirname+"/torrent";
 const bunyan = require("bunyan");
 const logger = bunyan.createLogger({name: "loader"});
 
-
-fs.readdir(TORRENT_PATH, function(err, files) {
-  if(err) { logger.info(err); process.exit(1); }
-  const ffiles = files.map(function(file){
-    return path.join(TORRENT_PATH, file);
-  }).filter(function(file){
-    return ( fs.statSync(file).isFile() && ( /\.torrent/.test(file) ) );
-  });
-  async.each(ffiles, 
-    function(ofile, callback){
-      rt(ofile, function(err, ftorrent){
-        if(err) {logger.error(err); callback(); return;}
-        logger.info("treating file : "+ofile);
-        const sources = ftorrent.announce;
-              name = ftorrent.name;
-              infoHash = ftorrent.infoHash;
-
-        let files = null,
-            size = 0;
-        if( typeof ftorrent.files !== "undefined" ) {
-          files = [];
-          for(let i=0; i<ftorrent.files.length; i++) {
-            const f = ftorrent.files[i];
-            size  += f.length;
-            files  = files.concat(f.path);
-          }
-        } else {
-          size = ftorrent.length;
-        }
-        
-        Torrent.findById(infoHash, function(err, torrent){
-          if(err) {logger.error(err); callback();}
-          if(!torrent) {
-            const t = new Torrent({
-              '_id': infoHash,
-              'title': name,
-              'details': sources,
-              'size': size,
-              'files': files,
-              'imported': new Date()
-            });
-            t.save(function(err){
-              if(err) {logger.error(err); return;}
-              logger.info('File '+ofile+' added');
-            });
-          } else {
-            logger.info('Torrent '+infoHash+' already present.');
-          }
-          fs.unlinkSync(ofile);
-          callback();
-        });
+function worker() {
+  return fs.readdirAsync(TORRENT_PATH)
+    .then(files => {
+      return files.map(function(file){
+        return path.join(TORRENT_PATH, file);
+      }).filter(function(file){
+        return ( fs.statSync(file).isFile() && ( /\.torrent/.test(file) ) );
       });
-    }, 
-    function(err){
-      if(err) {logger.error(err); process.exit(1);}
-      process.exit();
-    });
-});
+    })
+    .then(files => {
+      if(!files.length) return Promise.reject("No files to load");
+      return Promise.map(files, (ofile) => {
+        return new Promise((resolve, reject) => {
+          rt(ofile, (err, ftorrent) => {
+            if(err) {
+              reject(err)
+            }
+            resolve(ftorrent);
+          })
+        })
+        .then(ftorrent => {
+          const infoHash = ftorrent.infoHash;
+          return new Promise((resolve, reject) => {
+            Torrent.findById(infoHash, (err, torrent) => {
+              if(err) {
+                reject(err);
+              }
+              if(torrent) {
+                reject(`Torrent ${infoHash} already present.`)
+              }
+              resolve(ftorrent)
+            });
+          });
+        })
+        .then(ftorrent => {
+          function getFiles(tor) {
+            if( tor.files && !tor.files.length ) {
+              return tor.files.map(f => f.path);
+            }
+            return [];
+          }
+          const t = new Torrent({
+            '_id': ftorrent.infoHash,
+            'title': ftorrent.name,
+            'details': ftorrent.announce,
+            'size': ftorrent.length,
+            'files': getFiles(ftorrent),
+            'imported': new Date()
+          });
+          return new Promise((resolve, reject) => {
+            t.save((err) => {
+              if(err) {
+                reject(err)
+              }
+              resolve(ftorrent)
+            });
+          });
+        })
+        .then(ftorrent => logger.info(`File ${ftorrent.infoHash} added`))
+        .finally(() => fs.unlinkSync(ofile))
+      })
+    })
+    .catch(err => logger.error(err));
+}
+
+return worker()
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));
