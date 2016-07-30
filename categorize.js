@@ -21,6 +21,7 @@ const specialIgnores = () => {
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
   }
   const result = [];
+  // need to refactor this shit
   for(var i=2; i<100; i++) {
     result.push('.s'+pad(i,2));
     result.push('.r'+pad(i,2));
@@ -36,16 +37,13 @@ const specialIgnores = () => {
   return result;
 }
 
-const stream = Torrent.find(filter).sort({'imported': -1}).limit(100).stream();
-stream.on('data', function(torrent){
+const cursor = Torrent.find(filter).sort({'imported': -1}).limit(100).cursor();
+cursor.eachAsync(torrent => {
   logger.info(`Treating ${torrent._id} categorization`);
-  stream.pause();
   if(!torrent.files) {
     logger.info(`Torrent ${torrent._id} has no files!`);
-    stream.resume();
-    return;
+    return Promise.resolve(torrent);
   }
-
   const exts = torrent.files
     .map(file => path.extname(file).toLowerCase())
     .filter(ext => ext.length > 0) // no empty
@@ -60,9 +58,7 @@ stream.on('data', function(torrent){
     }, []) // deduplicate
 
   if(exts.length > 5) {
-    logger.info(`Torrent ${torrent._id} has no too many extensions!`);
-    stream.resume();
-    return;
+    return Promise.reject(`Torrent ${torrent._id} has no too many extensions!`);
   }
 
   const category = Object.keys(config.extToCateg)
@@ -73,17 +69,7 @@ stream.on('data', function(torrent){
     .find((c) => c !== undefined); // find the first category
 
   torrent.category = category || "Unknown";
-  torrent.save(function(err){
-    if(err) {logger.error(err); process.exit(1);}
-    logger.info(torrent._id+" categorized as "+category+"!");
-    stream.resume();
-  })
+  return torrent.save();
 })
-
-stream.on('error', function(err) {
-  logger.info("Error : "+err); process.exit(1);
-});
-
-stream.on('close', function(){
-  process.exit();
-});
+.then(() => logger.info(`All torrents treated`))
+.then(() => process.exit(0))
