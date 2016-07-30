@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "aria2": "^2.0.0",
-    "async": "^1.5.2",
     "bittorrent-dht": "^7.2.2",
     "bluebird": "^3.4.1",
     "bunyan": "^1.8.1",

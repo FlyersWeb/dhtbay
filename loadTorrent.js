@@ -13,11 +13,9 @@ Promise.promisifyAll(fs);
 
 const path = require('path');
 
-const async = require('async');
-
 const rt = require('read-torrent');
 
-const Torrent = require(__dirname+'/models/Torrent.js');
+const Torrent = require('./models/Torrent.js');
 
 const TORRENT_PATH = __dirname+"/torrent";
 
@@ -45,42 +43,19 @@ function worker() {
           })
         })
         .then(ftorrent => {
-          const infoHash = ftorrent.infoHash;
-          return new Promise((resolve, reject) => {
-            Torrent.findById(infoHash, (err, torrent) => {
-              if(err) {
-                reject(err);
-              }
-              if(torrent) {
-                reject(`Torrent ${infoHash} already present.`)
-              }
-              resolve(ftorrent)
-            });
-          });
+          return Torrent.findById(ftorrent.infoHash).exec()
+            .then(() => ftorrent);
         })
         .then(ftorrent => {
-          function getFiles(tor) {
-            if( tor.files && !tor.files.length ) {
-              return tor.files.map(f => f.path);
-            }
-            return [];
-          }
-          const t = new Torrent({
+          return new Torrent({
             '_id': ftorrent.infoHash,
             'title': ftorrent.name,
             'details': ftorrent.announce,
             'size': ftorrent.length,
-            'files': getFiles(ftorrent),
+            'files': ftorrent.files.map(f => f.path),
             'imported': new Date()
-          });
-          return new Promise((resolve, reject) => {
-            t.save((err) => {
-              if(err) {
-                reject(err)
-              }
-              resolve(ftorrent)
-            });
-          });
+          }).save()
+            .then(() => ftorrent);
         })
         .then(ftorrent => logger.info(`File ${ftorrent.infoHash} added`))
         .finally(() => fs.unlinkSync(ofile))
