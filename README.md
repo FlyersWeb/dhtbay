@@ -1,13 +1,23 @@
 # dht-bay
 A DHT crawler, torrent indexer and search portal all in nodeJS
 
+DEPENDENCIES
+------------
+
+This project works fine with :
+- node 6.3.1
+- npm 3.10.3
+- redis-server 2.8.17
+- mongod 2.4.10
+- aria2 1.18.8
+
 INSTALL
 -------
 
 #### Install necessary tools
 
 ```
-apt-get install redis-server redis-tools mongodb aria2
+apt-get install redis-server mongodb aria2
 ```
 
 #### Install node and npm
@@ -35,6 +45,8 @@ npm install
 
 #### Update database information
 
+You should update redis and mongo databases informations
+
 ```
 cp ./config/database.default.js ./config/database.js
 vim ./config/database.js
@@ -51,22 +63,25 @@ aria2c -q -j 10 --log-level=notice --enable-rpc=true --enable-dht=true --enable-
 Some tasks can be added in a cron treatment. For example this is my CRON configuration :
 
 ```
-# Bayesian Categorization only once a day
-20 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/classifier.js 2>&1 > /home/dhtcrawl/log/classifier.log
-# Categorize only once a day
-30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js 2>&1 > /home/dhtcrawl/log/categorize.log
-# Load torrent files
-*/10 * * * * nodejs /home/crawler/dht-bay/loadFileTorrent.js 2>&1 > /home/crawler/dht-bay/logs/load.log
+# Categorize each 30 minutes
+*/30 * * * * /usr/local/bin/node /home/dhtcrawl/dht-bay/categorize.js 2>&1 > /home/dhtcrawl/log/categorize.log
 ```
 
 #### Launch the crawler and torrent downloader
 
+Launch the crawler, the metadata loader and file indexing programs permanently
+
 ```
 forever start crawlDHT.js
 forever start loadDHT.js
+forever start loadTorrent.js
 ```
 
 You'll have your DHT Crawler up and running. Crawling may take some time so be patient.
+
+#### Good to know
+
+You should open your 6881/udp port to allow the crawler to have access to DHT network.
 
 
 CONTENT
@@ -81,16 +96,14 @@ The project is composed of 4 modules as presented. Each module is independant an
 +  **classifier.js** a bayesian classifier that will classify torrent that couldn't be classed by previous one. In order to work you need to train the classifier.
 +  **trainer.js** the bayesian classifier trainer, based on categorize script classification it helps unknown torrent classification.
 
-Using the **launcher.sh**, all modules will be executed and your database will be populated automatically.
+You could use the bayesian classifier when you've already had a bunch of torrent indexed. The more samples you'll have the more accurate it will be.
 
 Please fork it, and use it everywhere you can.
 
 IMPROVEMENTS
 ------------
 
-+ <s>Add a seed/leech crawler to know which torrent is dead or not.</s>
 + Improve categorization to support more extensions. Use an API extension/categorization.
-+ <s>Use bayesian categorization optimization.</s>
 
 Have fun.
 
