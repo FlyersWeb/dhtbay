@@ -2,7 +2,10 @@
 
 const config = require('./config/database');
 
+const Promise = require("bluebird");
+
 const mongoose = require('mongoose');
+mongoose.Promise = Promise;
 mongoose.connect(config.db.uri);
 
 const path = require('path');
@@ -74,7 +77,7 @@ cursor.eachAsync(torrent => {
   torrent.category = category || "Unknown";
   return torrent.save();
 })
-.then(() => logger.info(`All torrents treated`))
+.then(() => Promise.resolve(logger.info(`All torrents treated`)))
 .then(() => process.exit(0))
 .catch(err => Promise.reject(logger.error(err)))
 .catch(() => process.exit(1))
