@@ -1,93 +1,64 @@
-var mongoose = require('mongoose');
-var config = require('./config/database');
+"use strict";
+
+const config = require('./config/database');
+
+const Promise = require("bluebird");
+
+const mongoose = require('mongoose');
+mongoose.Promise = Promise;
 mongoose.connect(config.db.uri);
 
-var path = require('path');
+const path = require('path');
 
-var natural = require('natural');
+const natural = require('natural');
 
-var Torrent = require(__dirname+'/models/Torrent.js');
-var Classifier = require(__dirname+'/models/Classifier.js');
+const Torrent = require('./models/Torrent.js');
+const Classifier = require('./models/Classifier.js');
 
-console.logCopy = console.log.bind(console);
-
-console.log = function(data) {
-   if(arguments.length) {
-      var timestamp = '[' + new Date().toUTCString() + ']';
-      this.logCopy(timestamp, arguments);
-   }
-};
+const bunyan = require("bunyan");
+const logger = bunyan.createLogger({name: "classifier"});
 
 function precision(a) {
-   var e = 1;
+   let e = 1;
    while (Math.round(a * e) / e !== a) e *= 10;
    return Math.round(Math.log(e) / Math.LN10);
 };
 
-var filter = { 'category' : /Unknown/ };
+let   category = "Unknown";
+const filter = { 'category' : /Unknown/ };
 
-Classifier.findOne( {} , function( err, dbClassifier ) {
+Classifier.findOne({})
+.then(dbClassifier => {
+  if(!dbClassifier) return Promise.reject("Unavailable classifier!"); 
+  return Promise.resolve(natural.BayesClassifier.restore(JSON.parse(dbClassifier.raw)));
+})
+.then(classifier => {
+  const cursor = Torrent.find(filter).sort({'imported': -1}).limit(100).cursor();
+  return cursor.eachAsync(torrent => {
+    logger.info(`Treating ${torrent._id} categorization`)
+    if(!torrent.files) return Promise.reject(`Torrent ${torrent._id} has no files!`);
+    const exts = torrent.files
+      .map(file => path.extname(file).toLowerCase())
+      .filter(ext => ext.length > 0) // no empty
+      .filter(ext => ext.length < config.limitExt) // with min length
 
-  if(err) { console.log('Error occured : '+err); process.exit(1); }
-
-  if(!dbClassifier) { console.log("Unavailable classifier!"); process.exit(1); }
-
-  var classifier = natural.BayesClassifier.restore(JSON.parse(dbClassifier.raw));
-
-  var stream = Torrent.find(filter).sort({'imported': -1}).limit(100).stream();
-  stream.on('data', function(torrent){
-    var self = this;
-    self.pause();
-    console.log("Treating "+torrent._id+" categorization");
-    if(typeof torrent.files !== "undefined") {
-      var files = torrent.files;
-      var exts = [];
-      files.forEach(function(file){
-        var ext = path.extname(file).toLowerCase();
-        if( config.extToIgnore.indexOf(ext) < 0 ) {
-          if( ext.length < config.limitExt ) {
-            exts.push( ext ); 
-          }
-        }
-      });
-      exts = exts.filter( function(value){
-        return value.length !== 0
-      });
-
-      var category = 'Unknown';
-      
-      if(exts.length > 0) {
-        var classifications = classifier.getClassifications(exts);
-        if(classifications.length && (classifications[0].value * Math.pow(10,8) > 1)) {
-          var valA = classifications[0].value; var valB = classifications[1].value;
-          // Detect incertitude to limit classification
-          var cprecision = precision(valA);
-          var clength = (valA*Math.pow(10,cprecision)).toString().length;
-          valA = valA*Math.pow(10,cprecision);
-          valB = valB*Math.pow(10,cprecision);
-          if( ((valA-valB)/valA) > 0.4 )  {
-            category=classifications[0].label;
-          }
-        }
+    if(!exts.length) return Promise.reject(`No extensions for torrent ${torrent._id}`);
+    const classifications = classifier.getClassifications(exts);
+    if(classifications.length && (classifications[0].value * Math.pow(10,8) > 1)) {
+      const valA = classifications[0].value,
+            valB = classifications[1].value;
+      // Detect incertitude to limit classification
+      const cprecision = precision(valA);
+      const valAprecision = valA*Math.pow(10,cprecision),
+            valBprecision = valB*Math.pow(10,cprecision);
+      if( ((valAprecision-valBprecision)/valAprecision) > 0.4 )  {
+        category=classifications[0].label;
       }
-
-      torrent.category=category;
-
-      torrent.save(function(err){
-        if(err) {console.log(err); process.exit(1);}
-        console.log(torrent._id+" categorized as "+torrent.category+"!");
-        self.resume();
-      });
-
     }
-  });
-
-  stream.on('error', function(err) {
-    console.log("Error : "+err); process.exit(1);
-  });
-
-  stream.on('close', function(){
-    process.exit();
-  });
-
-});
+    torrent.category = category;
+    return torrent.save()
+  })
+})
+.then(() => process.exit(0))
+.catch((err) => Promise.reject(logger.error(err)))
+.catch(() => process.exit(1));

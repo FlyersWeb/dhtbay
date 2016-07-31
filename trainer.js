@@ -1,59 +1,38 @@
-var mongoose = require('mongoose');
-var config = require('./config/database');
+"use strict";
+
+const config = require('./config/database');
+
+const Promise = require("bluebird");
+
+const mongoose = require('mongoose');
+mongoose.Promise = Promise;
 mongoose.connect(config.db.uri);
 
-var path = require('path');
+const path = require('path');
 
-var Torrent = require(__dirname+'/models/Torrent.js');
-var Classifier = require(__dirname+'/models/Classifier.js');
+const Torrent = require('./models/Torrent.js');
+const Classifier = require('./models/Classifier.js');
 
-var natural = require("natural"),
-    classifier = new natural.BayesClassifier();
+const natural = require("natural");
+let   classifier = new natural.BayesClassifier();
 
-console.logCopy = console.log.bind(console);
+const bunyan = require("bunyan");
+const logger = bunyan.createLogger({name: "trainer"});
 
-console.log = function(data) {
-   if(arguments.length) {
-      var timestamp = '[' + new Date().toUTCString() + ']';
-      this.logCopy(timestamp, arguments);
-   }
-};
+const filter = { $nor: [ { 'category' : /Unknown/ }, { 'category' : /Other/ } ] };
 
-
-var filter = { $nor: [ { 'category' : /Unknown/ }, { 'category' : /Other/ } ] };
-
-var stream = Torrent.find(filter).sort({'imported': -1}).stream();
-stream.on('data', function(torrent){
-  var self = this;
-  console.log("Adding "+torrent._id+" training");
-  
-  if(typeof torrent.files !== "undefined") {
-    var files = torrent.files;
-    var exts = [];
-    files.forEach(function(file){
-      var ext = path.extname(file).toLowerCase();
-      if(ext.length < config.limitExt) {
-        exts.push( ext ); 
-      }
-    });
-    exts = exts.filter( function(value){
-      return value.length !== 0
-    });
-
-    classifier.addDocument(exts, torrent.category);
-
-  }
-});
-
-stream.on("error", function(err) {
-   console.log("An error occured : "+err);
-   process.exit(1);
-});
-
-stream.on("close", function() {
-  classifier.train();
-  Classifier.findOneAndUpdate( {}, { $set : { 'raw' : JSON.stringify(classifier) } }, { upsert : true }, function(err, trainedClassifier) {
-    if(err) { console.log("Error when saving : "+err); process.exit(1); }
-    process.exit();
-  });
-});
+const cursor = Torrent.find(filter).sort({'imported': -1}).cursor();
+cursor.eachAsync(torrent => {
+  logger.info(`Adding ${torrent._id} training`);
+  if(!torrent.files) return Promise.reject(`Torrent ${torrent._id} has no files!`);
+  const exts = torrent.files
+    .map(file => path.extname(file).toLowerCase())
+    .filter(ext => ext.length > 0) // no empty
+    .filter(ext => ext.length < config.limitExt) // with min length
+  return Promise.resolve(classifier.addDocument(exts, torrent.category));
+})
+.then(() => Promise.resolve(classifier.train()))
+.then(() => Classifier.findOneAndUpdate( {}, { $set : { 'raw' : JSON.stringify(classifier) } }, { upsert : true }))
+.then(() => process.exit(0))
+.catch(err => Promise.reject(logger.error(err)))
+.catch(() => process.exit(1))
