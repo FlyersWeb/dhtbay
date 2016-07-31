@@ -44,7 +44,7 @@ function worker() {
         })
         .then(ftorrent => {
           return Torrent.findById(ftorrent.infoHash).exec()
-            .then(() => ftorrent);
+            .then(() => Promise.resolve(ftorrent));
         })
         .then(ftorrent => {
           return new Torrent({
@@ -57,8 +57,8 @@ function worker() {
           }).save()
             .then(() => ftorrent);
         })
-        .then(ftorrent => logger.info(`File ${ftorrent.infoHash} added`))
-        .finally(() => fs.unlinkSync(ofile))
+        .then(ftorrent => Promise.resolve(logger.info(`File ${ftorrent.infoHash} added`)))
+        .then(() => fs.unlinkAsync(ofile))
       })
     })
     .catch(err => Promise.reject(logger.error(err)))
