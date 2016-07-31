@@ -1,13 +1,13 @@
 var config = {
-	db : {
-		uri : 'mongodb://user:passwor@server.com:27017/bitcannon'
-	},
-	redis : {
-		port : 6379,
-		host : '127.0.0.1',
-		options : {}
-	},
-    trackers: [
+  db : {
+    uri : 'mongodb://user:passwor@server.com:27017/bitcannon'
+  },
+  redis : {
+    port : 6379,
+    host : '127.0.0.1',
+    options : {}
+  },
+  trackers: [
     "udp://tracker.openbittorrent.com:80/announce",
     "udp://tracker.piratepublic.com:1337/announce"
   ],
@@ -28,6 +28,14 @@ var config = {
     '.mpls', '.clpi', '.bdmv', '.cdd', '.dbf', 
     '.vmx', '.vmsd', '.vmxf', '.nvram'
   ],
+  extToCateg : {
+    'Picture' : ['.png', '.jpeg', '.jpg'],
+    'Program' : ['.exe', '.dll', '.msi', '.jar'],
+    'ISO'   : ['.rar', '.01', '.001', 'r01', 'r001', 'z01', 'z001', '.iso', '.zip', '.dmg', '.tgz', '.gz', '.chd', '.7z', '.cab', '.apk', '.cdr', '.wbfs', '.dat', '.rar', '.lzma', '.mds', '.gho', '.ima', '.nrg', '.pkg', '.b5i', '.mdx', '.isz', '.vmdk'],
+    'Book' : ['.epub', '.pdf', '.cbz', '.cbr', '.cb7', '.cba', '.cbt', '.djvu', '.fb2', '.mobi', '.doc'],
+    'Audio' : ['.flac', '.mp3', '.m4p', '.m4r', '.m4a', '.m4b', '.ape', '.wma', '.ogg', '.dsf', '.wav'],
+    'Video' : ['.mp4', '.mkv', '.3gp', '.flv', '.f4v', '.avi', '.rm', '.rmvb', '.wmv', '.mov', '.mpg', '.mpeg', '.ts', '.m2ts', '.m4v', '.asf', '.vob', '.divx', '.srt'],
+  }
 };
 
 module.exports = config;
