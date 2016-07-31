@@ -1,65 +1,64 @@
-var Aria2 = require('aria2');
+"use strict";
 
-var config = require ('./config/database');
-var fs = require('fs');
+const config = require("./config/database");
 
-var redis = require("redis");
-    client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
+const Promise = require("bluebird");
 
-client.on("error", function(err) {
-    if(err) {
-        throw err;
-    }
-});
+const Aria2 = require("aria2");
+const fs = require("fs");
 
-var dest = __dirname+"/torrent/";
-var MAX_DL = 10;
-var MAGNET_TEMPLATE = "magnet:?xt=urn:btih:{DHTHASH}&tr=udp%3A%2F%2Ftracker.1337x.org%3A80%2Fannounce&tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce&tr=udp%3A%2F%2Ftracker.publicbt.com%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80%2Fannounce"
-var TORCACHE = "http://torcache.net/torrent/{DHTHASH}.torrent";
-var TORRAGE = "http://torrage.com/torrent/{DHTHASH}.torrent";
+const magnet = require("magnet-uri");
 
-var aria2 = new Aria2({
-   host: '127.0.0.1',
+const redis = require("redis");
+Promise.promisifyAll(redis.RedisClient.prototype);
+const client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
+
+const bunyan = require("bunyan");
+const logger = bunyan.createLogger({name: "loader"});
+
+const dest = __dirname+"/torrent/";
+const MAGNET_TEMPLATE = magnet.encode({
+  xt: "urn:btih:{DHTHASH}",
+  tr: config.trackers
+})
+
+const aria2 = new Aria2({
+   host: "127.0.0.1",
    port: 6800,
    secure: false,
-   secret: ''
+   secret: ""
 });
 
-console.logCopy = console.log.bind(console);
-
-console.log = function(data) {
-   if(arguments.length) {
-      var timestamp = '[' + new Date().toUTCString() + ']';
-      this.logCopy(timestamp, arguments);
-   }
-};
-
-
-function run() {
-
-  client.lpop("DHTS",function(err, hash){
-    if(err) {console.log(err); return;}
-    if(!hash) {return;}
-    if(fs.existsSync(dest+hash.toString().toUpperCase()+'.torrent')) {console.log("File "+hash.toString().toUpperCase()+".torrent already exists");return;}
-    var magnet = MAGNET_TEMPLATE.replace('{DHTHASH}',hash.toString().toUpperCase());
-    var torcache = TORCACHE.replace('{DHTHASH}',hash.toString().toUpperCase());
-    var torrage = TORRAGE.replace('{DHTHASH}',hash.toString().toUpperCase());
-    aria2.open(function() {
-      aria2.send('getVersion', function(err,res){
-      if(err) { console.log(err); return;}
-        aria2.send('addUri',[torcache],function(err,res){
-          if(err) { console.log(err); return;}
-          console.log("Added : "+magnet+" => "+res);
-          client.rpush("TORS", hash.toString());
-          aria2.close();
-        })
-      });
-    });
-  })
-
+const aria2Options = {
+  "bt-metadata-only": "true",
+  "bt-save-metadata": "true",
+  "follow-torrent": "false",
+  "seed-time": 0,
+  "dir": dest,
 }
 
-setInterval(function(){
-   run();
-}, 5000);
+function worker() {
+  let magnetLink = MAGNET_TEMPLATE;
+  return client.lpopAsync("DHTS")
+    .then(hash => {
+      return new Promise((resolve, reject) => {
+        if(!hash) reject("No torrent in queue");
+        const filename = `${dest}${hash.toString().toUpperCase()}.torrent`;
+        magnetLink = MAGNET_TEMPLATE.replace("{DHTHASH}",hash.toString().toUpperCase());
+        if(fs.existsSync(filename)) {
+          reject(`File ${filename} already exists`);
+        }
+        resolve(magnetLink)
+      });
+    })
+    .then(() => aria2.open())
+    .then(() => aria2.getVersion())
+    .then(() => aria2.addUri([magnetLink], aria2Options))
+    .then(res => Promise.resolve(logger.info(`Added : ${magnetLink} => ${res}`)))
+    .then(() => aria2.close())
+    .catch((err) => Promise.reject(logger.error(err)))
+}
 
+return worker()
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));

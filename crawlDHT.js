@@ -1,41 +1,37 @@
-var config = require('./config/database');
-var util = require('util');
+"use strict";
 
-var redis = require("redis");
-    client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
+const config = require('./config/database');
 
-console.logCopy = console.log.bind(console);
+const DHT = require('bittorrent-dht');
 
-console.log = function(data) {
-   if(arguments.length) {
-      var timestamp = '[' + new Date().toUTCString() + ']';
-      this.logCopy(timestamp, arguments);
-   }
-};
+const redis = require("redis");
+const client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
 
-var DHT = require('bittorrent-dht');
+const bunyan = require("bunyan");
+const logger = bunyan.createLogger({name: "crawler"});
 
-var dht = new DHT();
+const dht = new DHT();
   
-dht.listen(6881, function(){
-  console.log('now listening');
-  console.log(dht.address());
+dht.listen(6881, () => {
+  logger.info('now listening');
+  logger.info(dht.address());
 });
 
-dht.on('ready',function() {
-  console.log('now ready');
+dht.on('ready', () => {
+  logger.info('now ready');
 });
 
-dht.on('announce', function(peer, infoHash) {
-  console.log("announce : "+peer.host + ':' + peer.port+' : '+infoHash.toString('hex'));
+dht.on('announce', (peer, infoHash) => {
+  logger.info(`announce : ${peer.host}:${peer.port} : ${infoHash.toString('hex')}`);
   dht.lookup(infoHash);
   client.rpush("DHTS", infoHash.toString('hex'));
 });
 
-dht.on('peer', function(peer, infoHash, from) {
-  console.log("peer : "+peer.host + ':' + peer.port+' : '+infoHash.toString('hex'));
+dht.on('peer', (peer, infoHash, from) => {
+  logger.debug(`peer : ${peer.host}:${peer.port} : ${infoHash.toString('hex')}`);
 });
 
-dht.on('error',function(err) {
+dht.on('error', (err) => {
+  logger.error(err);
   dht.destroy();
 });

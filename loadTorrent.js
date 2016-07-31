@@ -1,82 +1,69 @@
-var mongoose = require('mongoose');
-var config = require('./config/database');
+"use strict";
+
+const config = require('./config/database');
+
+const Promise = require("bluebird");
+
+const mongoose = require('mongoose');
+mongoose.Promise = Promise;
 mongoose.connect(config.db.uri);
 
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+Promise.promisifyAll(fs);
 
-var redis = require("redis");
-    client = redis.createClient(config.redis.port, config.redis.host, config.redis.options);
+const path = require('path');
 
-client.on("error", function(err) {
-    if(err) {
-        throw err;
-    }
-});
+const rt = require('read-torrent');
 
-var rt = require('read-torrent');
+const Torrent = require('./models/Torrent.js');
 
-var Torrent = require(__dirname+'/models/Torrent.js');
+const TORRENT_PATH = __dirname+"/torrent";
 
-var TORRENT_PATH = __dirname+"/torrent";
+const bunyan = require("bunyan");
+const logger = bunyan.createLogger({name: "loader"});
 
-console.logCopy = console.log.bind(console);
-
-console.log = function(data) {
-   if(arguments.length) {
-      var timestamp = '[' + new Date().toUTCString() + ']';
-      this.logCopy(timestamp, arguments);
-   }
-};
-
-function run() {
-  client.lpop("TORS", function(err, file){
-    if(err) { console.log(err); return; }
-    if(!file) { return; }
-    var ofile = path.join(TORRENT_PATH, file.toUpperCase())+'.torrent';
-    console.log("treating file : "+ofile);
-    if ( !fs.existsSync(ofile) ) { console.log("file do not exists"); return; }
-    rt(ofile, function(err, ftorrent){
-      if(err) {console.log(err); return;}
-      var files = null;
-      var size = 0;
-      if( typeof ftorrent.files !== "undefined" ) {
-        files = [];
-        for(var i=0; i<ftorrent.files.length; i++) {
-          var file = ftorrent.files[i];
-          size  += file.length;
-          files  = files.concat(file.path);
-        }
-      } else {
-        size = ftorrent.length;
-      }
-      var sources = ftorrent.announce;
-      var name = ftorrent.name;
-      var infoHash = ftorrent.infoHash;
-      
-      Torrent.findById(infoHash, function(err, torrent){
-        if(err) {console.log(err); callback();}
-        if(!torrent) {
-          var t = new Torrent({
-            '_id': infoHash,
-            'title': name,
-            'details': sources,
-            'size': size,
-            'files': files,
-            'imported': new Date()
-          });
-          t.save(function(err){
-            console.log('File '+ofile+' added');
-          });
-        } else {
-          console.log('Torrent '+infoHash+' already present.');
-        }
-        fs.unlinkSync(ofile);
+function worker() {
+  return fs.readdirAsync(TORRENT_PATH)
+    .then(files => {
+      return files.map(function(file){
+        return path.join(TORRENT_PATH, file);
+      }).filter(function(file){
+        return ( fs.statSync(file).isFile() && ( /\.torrent/.test(file) ) );
       });
-    });
-  });
+    })
+    .then(files => {
+      if(!files.length) return Promise.reject("No files to load");
+      return Promise.map(files, (ofile) => {
+        return new Promise((resolve, reject) => {
+          rt(ofile, (err, ftorrent) => {
+            if(err) {
+              reject(err)
+            }
+            resolve(ftorrent);
+          })
+        })
+        .then(ftorrent => {
+          return Torrent.findById(ftorrent.infoHash).exec()
+            .then(() => Promise.resolve(ftorrent));
+        })
+        .then(ftorrent => {
+          return new Torrent({
+            '_id': ftorrent.infoHash,
+            'title': ftorrent.name,
+            'details': ftorrent.announce,
+            'size': ftorrent.length,
+            'files': ftorrent.files.map(f => f.path),
+            'imported': new Date()
+          }).save()
+            .then(() => ftorrent);
+        })
+        .then(ftorrent => Promise.resolve(logger.info(`File ${ftorrent.infoHash} added`)))
+        .then(() => fs.unlinkAsync(ofile))
+      })
+    })
+    .catch(err => Promise.reject(logger.error(err)))
 }
 
-setInterval(function(){
-  run();
-}, 1000);
+return worker()
+  .then(() => process.exit(0))
+  .catch(() => process.exit(1));
