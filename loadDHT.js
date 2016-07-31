@@ -33,7 +33,6 @@ const aria2Options = {
   "bt-metadata-only": "true",
   "bt-save-metadata": "true",
   "follow-torrent": "false",
-  "bt-stop-timeout": 60,
   "seed-time": 0,
   "dir": dest,
 }
