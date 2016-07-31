@@ -61,7 +61,7 @@ function worker() {
         .finally(() => fs.unlinkSync(ofile))
       })
     })
-    .catch(err => logger.error(err));
+    .catch(err => Promise.reject(logger.error(err)))
 }
 
 return worker()

@@ -56,7 +56,7 @@ function worker() {
     .then(() => aria2.getVersion())
     .then(() => aria2.addUri([magnetLink], aria2Options))
     .then(res => logger.info(`Added : ${magnetLink} => ${res}`))
-    .catch((err) => logger.error(err))
+    .catch((err) => Promise.reject(logger.error(err)))
     .finally(() => aria2.close())
 }
 

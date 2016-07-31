@@ -76,3 +76,5 @@ cursor.eachAsync(torrent => {
 })
 .then(() => logger.info(`All torrents treated`))
 .then(() => process.exit(0))
+.catch(err => Promise.reject(logger.error(err)))
+.catch(() => process.exit(1))
