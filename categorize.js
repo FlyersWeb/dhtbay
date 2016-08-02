@@ -70,7 +70,7 @@ cursor.eachAsync(torrent => {
     }, []) // deduplicate
 
   if(exts.length > 5) {
-    return Promise.reject(`Torrent ${torrent._id} has no too many extensions!`);
+    return Promise.resolve(`Torrent ${torrent._id} has no too many extensions!`);
   }
 
   const category = findCategoryBasedOnExtensions(exts);
