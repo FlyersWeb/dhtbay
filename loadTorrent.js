@@ -42,22 +42,20 @@ function worker() {
             resolve(ftorrent);
           })
         })
+        .then(ftorrent => [ftorrent, Torrent.findById(ftorrent.infoHash).exec()])
+        .spread((ftorrent, res) => (res) ? Promise.reject("TEXISTS") : Promise.resolve(ftorrent))
         .then(ftorrent => {
-          return Torrent.findById(ftorrent.infoHash).exec()
-            .then(() => Promise.resolve(ftorrent));
-        })
-        .then(ftorrent => {
-          return new Torrent({
+          return [ftorrent, new Torrent({
             '_id': ftorrent.infoHash,
             'title': ftorrent.name,
             'details': ftorrent.announce,
             'size': ftorrent.length,
             'files': ftorrent.files.map(f => f.path),
             'imported': new Date()
-          }).save()
-            .then(() => ftorrent);
+          }).save()]
         })
-        .then(ftorrent => Promise.resolve(logger.info(`File ${ftorrent.infoHash} added`)))
+        .spread((ftorrent, res) => Promise.resolve(logger.info(`File ${ftorrent.infoHash} added`)))
+        .catch(err => (err==="TEXISTS") ? Promise.resolve(logger.info(`File ${ofile} already loaded`)) : Promise.reject(err))
         .then(() => fs.unlinkAsync(ofile))
       })
     })
