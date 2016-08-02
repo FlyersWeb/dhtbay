@@ -55,7 +55,7 @@ vim ./config/database.js
 #### Launch aria2
 
 ```
-aria2c -q -j 10 --log-level=notice --enable-rpc=true --enable-dht=true --enable-dht6=true -l $(pwd)/logs/aria2c.log &
+aria2c -q -j 10 --log-level=notice --daemon=true --enable-rpc=true --enable-dht=true --enable-dht6=true -l $(pwd)/logs/aria2c.log
 ```
 
 #### Cron to install
