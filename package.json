@@ -1,6 +1,6 @@
 {
   "name": "dht-bay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "dependencies": {
     "aria2": "^2.0.0",
