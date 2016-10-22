@@ -1,7 +1,12 @@
 {
   "name": "dht-bay",
   "version": "1.0.1",
-  "private": true,
+  "scripts": {
+    "start": "node_modules/.bin/npm-run-parallel crawl loadDHT loadTorrent",
+    "crawl": "node_modules/.bin/forever start crawlDHT.js",
+    "loadDHT": "node_modules/.bin/forever start loadDHT.js",
+    "loadTorrent": "node_modules/.bin/forever start loadTorrent.js"
+  },
   "dependencies": {
     "aria2": "^2.0.0",
     "bittorrent-dht": "^7.2.2",
