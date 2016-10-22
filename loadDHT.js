@@ -22,12 +22,7 @@ const MAGNET_TEMPLATE = magnet.encode({
   tr: config.trackers
 })
 
-const aria2 = new Aria2({
-   host: "127.0.0.1",
-   port: 6800,
-   secure: false,
-   secret: ""
-});
+const aria2 = new Aria2(config.aria2);
 
 const aria2Options = {
   "bt-metadata-only": "true",

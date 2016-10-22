@@ -2,19 +2,21 @@
   "name": "dht-bay",
   "version": "1.0.1",
   "scripts": {
-    "start": "node_modules/.bin/npm-run-parallel crawl loadDHT loadTorrent",
-    "crawl": "node_modules/.bin/forever start crawlDHT.js",
-    "loadDHT": "node_modules/.bin/forever start loadDHT.js",
-    "loadTorrent": "node_modules/.bin/forever start loadTorrent.js"
+    "start": "npm run crawl",
+    "crawl": "node crawlDHT.js",
+    "loadDHT": "node loadDHT.js",
+    "loadTorrent": "node loadTorrent.js"
   },
   "dependencies": {
     "aria2": "^2.0.0",
     "bittorrent-dht": "^7.2.2",
     "bluebird": "^3.4.1",
     "bunyan": "^1.8.1",
+    "forever": "^0.15.2",
     "magnet-uri": "^5.1.4",
     "mongoose": "^4.5.7",
     "natural": "^0.4.0",
+    "npm-run-parallel": "^0.5.0",
     "read-torrent": "^1.3.0",
     "redis": "^2.6.2"
   },

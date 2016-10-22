@@ -1,0 +1,27 @@
+version: '2'
+services:
+  dhtbay:
+    build: .
+    image: dhtbay
+    container_name: dhtbay
+    links:
+      - aria2
+      - mongo
+      - redis
+    ports:
+      - "6881/udp:6881/udp"
+  aria2:
+    image: flyersweb/aria2
+    container_name: aria2
+    restart: always
+    volumes:
+      - ./torrent:/dataComplete
+      - ./config/aria2:/etc/aria2
+  mongo: 
+    image: mongo
+    container_name: mongo
+    restart: always
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
