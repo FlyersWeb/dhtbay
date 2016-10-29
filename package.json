@@ -2,10 +2,10 @@
   "name": "dht-bay",
   "version": "1.0.1",
   "scripts": {
-    "start": "npm run crawl",
-    "crawl": "node crawlDHT.js",
-    "loadDHT": "node loadDHT.js",
-    "loadTorrent": "node loadTorrent.js"
+    "start": "npm run crawl & npm run loadDHT & npm run loadTorrent &",
+    "crawl": "node crawlDHT.js > logs/crawl.log 2>&1",
+    "loadDHT": "node loadDHT.js > logs/dht.log 2>&1",
+    "loadTorrent": "node loadTorrent.js > logs/torrent.log 2>&1"
   },
   "dependencies": {
     "aria2": "^3.0.0",
