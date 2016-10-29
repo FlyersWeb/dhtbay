@@ -12,6 +12,7 @@
     "bittorrent-dht": "^7.2.2",
     "bluebird": "^3.4.1",
     "bunyan": "^1.8.1",
+    "chokidar": "^1.6.1",
     "forever": "^0.15.2",
     "magnet-uri": "^5.1.4",
     "mongoose": "^4.5.7",

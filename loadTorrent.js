@@ -17,51 +17,37 @@ const rt = require('read-torrent');
 
 const Torrent = require('./models/Torrent.js');
 
-const TORRENT_PATH = __dirname+"/torrent";
-
 const bunyan = require("bunyan");
 const logger = bunyan.createLogger({name: "loader"});
 
-function worker() {
-  return fs.readdirAsync(TORRENT_PATH)
-    .then(files => {
-      return files.map(function(file){
-        return path.join(TORRENT_PATH, file);
-      }).filter(function(file){
-        return ( fs.statSync(file).isFile() && ( /\.torrent/.test(file) ) );
-      });
-    })
-    .then(files => {
-      if(!files.length) return Promise.reject("No files to load");
-      return Promise.map(files, (ofile) => {
-        return new Promise((resolve, reject) => {
-          rt(ofile, (err, ftorrent) => {
-            if(err) {
-              reject(err)
-            }
-            resolve(ftorrent);
-          })
-        })
-        .then(ftorrent => [ftorrent, Torrent.findById(ftorrent.infoHash).exec()])
-        .spread((ftorrent, res) => (res) ? Promise.reject("TEXISTS") : Promise.resolve(ftorrent))
-        .then(ftorrent => {
-          return [ftorrent, new Torrent({
-            '_id': ftorrent.infoHash,
-            'title': ftorrent.name,
-            'details': ftorrent.announce,
-            'size': ftorrent.length,
-            'files': ftorrent.files.map(f => f.path),
-            'imported': new Date()
-          }).save()]
-        })
-        .spread((ftorrent, res) => Promise.resolve(logger.info(`File ${ftorrent.infoHash} added`)))
-        .catch(err => (err==="TEXISTS") ? Promise.resolve(logger.info(`File ${ofile} already loaded`)) : Promise.reject(err))
-        .then(() => fs.unlinkAsync(ofile))
-      })
-    })
-    .catch(err => Promise.reject(logger.error(err)))
-}
+const chokidar = require("chokidar");
 
-return worker()
-  .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+const TORRENT_PATH = `${__dirname}/torrent`;
+const watcher = chokidar.watch(`${TORRENT_PATH}/*.torrent`);
+
+watcher.on("add", (fsfile) => {
+  return new Promise((resolve, reject) => {
+    rt(fsfile, (err, ftorrent) => {
+      if(err) {
+        reject(err)
+      }
+      resolve(ftorrent);
+    })
+  })
+  .then(ftorrent => [ftorrent, Torrent.findById(ftorrent.infoHash).exec()])
+  .spread((ftorrent, res) => (res) ? Promise.reject("TEXISTS") : Promise.resolve(ftorrent))
+  .then(ftorrent => {
+    return [ftorrent, new Torrent({
+      '_id': ftorrent.infoHash,
+      'title': ftorrent.name,
+      'details': ftorrent.announce,
+      'size': ftorrent.length,
+      'files': ftorrent.files.map(f => f.path),
+      'imported': new Date()
+    }).save()]
+  })
+  .spread((ftorrent, res) => Promise.resolve(logger.info(`File ${ftorrent.infoHash} added`)))
+  .catch(err => (err==="TEXISTS") ? Promise.resolve(logger.info(`File ${fsfile} already loaded`)) : Promise.reject(err))
+  .then(() => fs.unlinkAsync(fsfile))
+  .catch(err => Promise.reject(logger.error(err)))
+});

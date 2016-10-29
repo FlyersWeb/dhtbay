@@ -16,7 +16,6 @@ const client = redis.createClient(config.redis.port, config.redis.host, config.r
 const bunyan = require("bunyan");
 const logger = bunyan.createLogger({name: "loader"});
 
-const dest = __dirname+"/torrent/";
 const MAGNET_TEMPLATE = magnet.encode({
   xt: "urn:btih:{DHTHASH}",
   tr: config.trackers
@@ -28,17 +27,16 @@ const aria2Options = {
   "bt-metadata-only": "true",
   "bt-save-metadata": "true",
   "follow-torrent": "false",
-  "seed-time": 0,
-  "dir": dest,
+  "seed-time": 0
 }
 
-function worker() {
+client.on("message", (channel, message) => {
   let magnetLink = MAGNET_TEMPLATE;
-  return client.lpopAsync("DHTS")
+  return Promise.resolve(message)
     .then(hash => {
       return new Promise((resolve, reject) => {
         if(!hash) reject("No torrent in queue");
-        const filename = `${dest}${hash.toString().toUpperCase()}.torrent`;
+        const filename = `${__dirname}/torrent/${hash.toString().toUpperCase()}.torrent`;
         magnetLink = MAGNET_TEMPLATE.replace("{DHTHASH}",hash.toString().toUpperCase());
         if(fs.existsSync(filename)) {
           reject(`File ${filename} already exists`);
@@ -51,9 +49,7 @@ function worker() {
     .then(() => aria2.addUri([magnetLink], aria2Options))
     .then(res => Promise.resolve(logger.info(`Added : ${magnetLink} => ${res}`)))
     .then(() => aria2.close())
-    .catch((err) => Promise.reject(logger.error(err)))
-}
+    .catch((err) => Promise.reject(logger.error(err)));
+});
 
-return worker()
-  .then(() => process.exit(0))
-  .catch(() => process.exit(1));
+client.subscribe("DHTS");
