@@ -21,6 +21,8 @@ services:
     image: mongo
     container_name: mongo
     restart: always
+    volumes:
+      - ./data:/data/db
   redis:
     image: redis
     container_name: redis
