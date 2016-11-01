@@ -24,7 +24,7 @@ dht.on('ready', () => {
 dht.on('announce', (peer, infoHash) => {
   logger.info(`announce : ${peer.host}:${peer.port} : ${infoHash.toString('hex')}`);
   dht.lookup(infoHash);
-  client.rpush("DHTS", infoHash.toString('hex'));
+  client.publish("DHTS", infoHash.toString('hex'));
 });
 
 dht.on('peer', (peer, infoHash, from) => {

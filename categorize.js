@@ -15,6 +15,8 @@ const Torrent = require('./models/Torrent.js');
 const bunyan = require("bunyan");
 const logger = bunyan.createLogger({name: "categorize"});
 
+const CronJob = require("cron").CronJob;
+
 const filter = { 'category' : /Unknown/ };
 
 const dynamicToIgnore = () => {
@@ -49,35 +51,36 @@ function findCategoryBasedOnExtensions(exts) {
     .find((c) => c !== undefined); // find the first category
 }
 
-const cursor = Torrent.find(filter).sort({'imported': -1}).limit(100).cursor();
-cursor.eachAsync(torrent => {
-  logger.info(`Treating ${torrent._id} categorization`);
-  if(!torrent.files) {
-    logger.info(`Torrent ${torrent._id} has no files!`);
-    return Promise.resolve(torrent);
-  }
-  const exts = torrent.files
-    .map(file => path.extname(file).toLowerCase())
-    .filter(ext => ext.length > 0) // no empty
-    .filter(ext => !config.extToIgnore.includes(ext)) // no ignored
-    .filter(ext => !dynamicToIgnore().includes(ext)) // no special ignored
-    .filter(ext => ext.length < config.limitExt) // with min length
-    .slice() // shallow copy
-    .sort() // sort
-    .reduce((p, c) => {
-      if(p[0] !== c) return p.concat(c);
-      return p;
-    }, []) // deduplicate
+const job = new CronJob("30 * * * * *", function() { // run each 30 seconds
+  const cursor = Torrent.find(filter).sort({'imported': -1}).limit(100).cursor();
+  cursor.eachAsync(torrent => {
+    logger.info(`Treating ${torrent._id} categorization`);
+    if(!torrent.files) {
+      logger.info(`Torrent ${torrent._id} has no files!`);
+      return Promise.resolve(torrent);
+    }
+    const exts = torrent.files
+      .map(file => path.extname(file).toLowerCase())
+      .filter(ext => ext.length > 0) // no empty
+      .filter(ext => !config.extToIgnore.includes(ext)) // no ignored
+      .filter(ext => !dynamicToIgnore().includes(ext)) // no special ignored
+      .filter(ext => ext.length < config.limitExt) // with min length
+      .slice() // shallow copy
+      .sort() // sort
+      .reduce((p, c) => {
+        if(p[0] !== c) return p.concat(c);
+        return p;
+      }, []) // deduplicate
 
-  if(exts.length > 5) {
-    return Promise.resolve(`Torrent ${torrent._id} has no too many extensions!`);
-  }
+    if(exts.length > 5) {
+      return Promise.resolve(`Torrent ${torrent._id} has no too many extensions!`);
+    }
 
-  const category = findCategoryBasedOnExtensions(exts);
-  torrent.category = category || "Unknown";
-  return torrent.save();
-})
-.then(() => Promise.resolve(logger.info(`All torrents treated`)))
-.then(() => process.exit(0))
-.catch(err => Promise.reject(logger.error(err)))
-.catch(() => process.exit(1))
+    const category = findCategoryBasedOnExtensions(exts);
+    torrent.category = category || "Unknown";
+    return torrent.save();
+  })
+  .then(() => Promise.resolve(logger.info(`All torrents treated`)))
+  .catch(err => Promise.reject(logger.error(err)))
+});
+job.start();

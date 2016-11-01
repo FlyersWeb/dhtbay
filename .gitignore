@@ -3,5 +3,6 @@ logs/*
 !logs/.gitkeep
 torrent/*
 !torrent/.gitkeep
+data/*
+!data/.gitkeep
 config/database.js
-launcher
