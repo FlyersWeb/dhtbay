@@ -17,6 +17,8 @@ services:
     volumes:
       - ./torrent:/dataComplete
       - ./config/aria2:/etc/aria2
+    ports:
+      - "6900/udp:6900/udp"
   mongo: 
     image: mongo
     container_name: mongo

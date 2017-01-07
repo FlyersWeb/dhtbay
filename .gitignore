@@ -5,4 +5,3 @@ torrent/*
 !torrent/.gitkeep
 data/*
 !data/.gitkeep
-config/database.js

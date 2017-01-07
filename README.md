@@ -30,7 +30,6 @@ apt-get install redis-server mongodb aria2
 You should update redis and mongo databases informations
 
 ```
-cp ./config/database.default.js ./config/database.js
 vim ./config/database.js
 ```
 
