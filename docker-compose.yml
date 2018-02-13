@@ -9,23 +9,23 @@ services:
       - mongo
       - redis
     ports:
-      - "6881/udp:6881/udp"
+      - "6881:6881/udp"
   aria2:
     image: flyersweb/aria2
-    container_name: aria2
+    container_name: dhtaria2
     restart: always
     volumes:
       - ./torrent:/dataComplete
       - ./config/aria2:/etc/aria2
     ports:
-      - "6900/udp:6900/udp"
+      - "6900:6800"
   mongo: 
-    image: mongo
+    image: mongo:3.0
     container_name: mongo
     restart: always
     volumes:
       - ./data:/data/db
   redis:
-    image: redis
+    image: redis:3
     container_name: redis
     restart: always
