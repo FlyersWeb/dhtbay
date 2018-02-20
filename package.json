@@ -5,7 +5,7 @@
     "start": "npm run loadDHT & npm run loadTorrent & npm run categorize & npm run crawl",
     "crawl": "node crawlDHT.js",
     "loadDHT": "node loadDHT.js",
-    "loadTorrent": "node loadTorrent.js",
+    "loadTorrent": "node loadTorrent.js --watch",
     "categorize": "node categorize.js",
     "classifier": "node classifier.js",
     "trainer": "node trainer.js"
@@ -17,7 +17,9 @@
     "bunyan": "^1.8.4",
     "chokidar": "^1.6.1",
     "cron": "^1.1.1",
+    "glob": "^7.1.2",
     "magnet-uri": "^5.1.4",
+    "minimist": "^1.2.0",
     "mongoose": "^4.6.5",
     "natural": "^0.4.0",
     "read-torrent": "^1.3.0",
