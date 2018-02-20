@@ -18,7 +18,7 @@ services:
     container_name: dhtaria2
     restart: always
     volumes:
-      - ./torrent:/dataComplete
+      - ./torrent:/data
       - ./config/aria2:/etc/aria2
     ports:
       - "6900:6800"
