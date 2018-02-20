@@ -4,12 +4,15 @@ services:
     build: .
     image: dhtbay
     container_name: dhtbay
+    restart: always
     links:
       - aria2
       - mongo
       - redis
     ports:
       - "6881:6881/udp"
+    volumes:
+      - ./torrent:/var/www/torrent
   aria2:
     image: flyersweb/aria2
     container_name: dhtaria2
