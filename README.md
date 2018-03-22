@@ -9,71 +9,16 @@ This project works fine with :
 - npm 3.10.3
 - redis-server 2.8.17
 - mongod 2.4.10
-- aria2 1.18.8
-
-DOCKER
-------
-
-But you can also use it using docker, you'll juste need `docker` and `docker-compose` commands to be available
+- aria2 1.33.1
 
 INSTALL
 -------
-
-#### Install necessary tools
-
-```
-apt-get install redis-server mongodb aria2
-```
-
-#### Update database information
-
-You should update redis and mongo databases informations
-
-```
-vim ./config/database.js
-```
-
-#### Install node and npm
-
-```
-apt-get install nodejs
-```
-
-#### Install bitcannon
-
-See bitcannon repository for this : https://github.com/Stephen304/bitcannon. 
-You could use my fork in order to be able to see torrent files : https://github.com/FlyersWeb/bitcannon
-
-#### Install dependencies
-
-```
-npm install
-```
-
-#### Launch aria2
-
-```
-aria2c -q -j 10 --log-level=notice --daemon=true --enable-rpc=true --enable-dht=true --enable-dht6=true -l $(pwd)/logs/aria2c.log
-```
-
-#### Launch the crawler and torrent downloader
-
-Launch the crawler, the metadata loader and file indexing programs permanently
-
-```
-node crawlDHT.js
-node loadDHT.js
-node loadTorrent.js
-node categorize.js
-```
-
-You'll have your DHT Crawler up and running. Crawling may take some time so be patient.
 
 #### Good to know
 
 You should open your 6881/udp port to allow the crawler to have access to DHT network.
 
-#### Using docker
+#### Use docker
 
 Or you can just use the docker project version and run it using :
 
@@ -81,7 +26,14 @@ Or you can just use the docker project version and run it using :
 docker-compose up -d
 ```
 
-It will automatically launch redis, mongo and aria2 then start crawling and categorizing for you
+It will automatically launch redis, mongo and aria2 then start crawling and categorizing for you. You'll have your DHT Crawler up and running. Crawling may take some time so be patient.
+
+ARCHITECTURE
+------------
+
+This diagram presents an overview of the project architecture and how each piece communicate with each other.
+
+![DHTBay Architecture](./documentation/architecture.svg)
 
 CONTENT
 -------
